@@ -4,6 +4,7 @@
 ![Version](https://img.shields.io/badge/version-3.0.0-success)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Termux%20%7C%20GitHub%20Pages-orange)
+https://taha-hb.github.io/sit-council-system/
 
 A **complete, professional meeting management system** for Student Council with PDF minutes generation, member management, and real-time collaboration. Works on **Termux (Android)** and **GitHub Pages** simultaneously.
 
