@@ -1,1 +1,2032 @@
 
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIT Council | Professional Meeting Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        /* === CSS RESET & VARIABLES === */
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --success: #4cc9f0;
+            --danger: #ef233c;
+            --warning: #ff9e00;
+            --info: #4895ef;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --sidebar-width: 280px;
+            --header-height: 70px;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+            --shadow-xl: 0 16px 48px rgba(0,0,0,0.15);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --gradient-primary: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+            --gradient-success: linear-gradient(135deg, #4cc9f0 0%, #4895ef 100%);
+            --gradient-warning: linear-gradient(135deg, #ff9e00 0%, #ff5400 100%);
+            --gradient-danger: linear-gradient(135deg, #ef233c 0%, #d90429 100%);
+            --bg-color: #ffffff;
+            --text-color: #1a1a2e;
+            --card-bg: #ffffff;
+            --border-color: #e9ecef;
+        }
+
+        [data-theme="dark"] {
+            --primary: #5a76ff;
+            --primary-dark: #4a66e4;
+            --secondary: #8a2be2;
+            --accent: #ff4081;
+            --success: #00e5ff;
+            --danger: #ff5252;
+            --warning: #ffb74d;
+            --info: #448aff;
+            --dark: #f8f9fa;
+            --light: #121212;
+            --gray: #a0a0a0;
+            --gray-light: #2d2d2d;
+            --bg-color: #121212;
+            --text-color: #f8f9fa;
+            --card-bg: #1e1e1e;
+            --border-color: #2d2d2d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+
+        /* === LOADING OVERLAY === */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: var(--transition);
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--gray-light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* === AUTHENTICATION SECTION === */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-container.dark-bg {
+            background: linear-gradient(135deg, #121212 0%, #2d2d2d 100%);
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 2px, transparent 2px),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 50px 50px, 30px 30px;
+            animation: float 40s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-50px, -50px); }
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-color);
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.6s ease;
+        }
+
+        /* === MAIN APPLICATION === */
+        .app-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        /* === HEADER === */
+        .header {
+            height: var(--header-height);
+            background: var(--card-bg);
+            box-shadow: var(--shadow-md);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            transition: var(--transition);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header.scrolled {
+            height: 60px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+        }
+
+        /* === SIDEBAR === */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--card-bg);
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            bottom: 0;
+            box-shadow: var(--shadow-md);
+            padding: 25px 0;
+            overflow-y: auto;
+            transition: var(--transition);
+            z-index: 999;
+            border-right: 1px solid var(--border-color);
+        }
+
+        /* === MAIN CONTENT === */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+            margin-top: var(--header-height);
+            min-height: calc(100vh - var(--header-height));
+            transition: var(--transition);
+            background: var(--bg-color);
+        }
+
+        /* === DASHBOARD === */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        /* === FORM SECTIONS === */
+        .form-section {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        /* === TABLES === */
+        .table-container {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--text-color);
+        }
+
+        .table th {
+            background: var(--gray-light);
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-color);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* === MODALS === */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 30px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        /* === TOAST NOTIFICATIONS === */
+        .toast-container {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            min-width: 350px;
+            transform: translateX(400px);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border-left: 5px solid var(--primary);
+            border: 1px solid var(--border-color);
+        }
+
+        /* === DARK MODE TOGGLE === */
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: var(--gray-light);
+        }
+
+        /* === FILE UPLOAD === */
+        .file-upload-area {
+            border: 2px dashed var(--primary);
+            border-radius: var(--radius);
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--gray-light);
+        }
+
+        .file-upload-area:hover {
+            background: var(--gray-light);
+            border-color: var(--primary-dark);
+        }
+
+        /* === RESPONSIVE DESIGN === */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 20px;
+            }
+            .main-content {
+                padding: 20px;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* === PRINT STYLES === */
+        @media print {
+            .header,
+            .sidebar,
+            .page-actions,
+            .form-actions {
+                display: none !important;
+            }
+            .main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+        }
+
+        /* Additional styles will be added dynamically */
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="mt-2">Loading SIT Council Portal...</div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Authentication Section -->
+    <div class="auth-container" id="authContainer">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <div class="auth-logo-icon">
+                    <i class="fas fa-users-cog"></i>
+                </div>
+                <h1>SIT Council Portal</h1>
+                <p>Professional Meeting Management System</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-form="login">Sign In</div>
+                <div class="auth-tab" data-form="register">Sign Up</div>
+                <div class="auth-tab" data-form="forgot">Forgot Password</div>
+            </div>
+            
+            <!-- Login Form -->
+            <form class="auth-form active" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="loginEmail" 
+                           placeholder="you@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" class="form-control" id="loginPassword" 
+                               placeholder="••••••••" required>
+                        <button type="button" class="password-toggle" id="loginPasswordToggle">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+                
+                <div class="divider">
+                    <span>or continue with</span>
+                </div>
+                
+                <div id="g_id_onload"
+                     data-client_id="YOUR_GOOGLE_CLIENT_ID"
+                     data-context="signin"
+                     data-ux_mode="popup"
+                     data-callback="handleGoogleSignIn"
+                     data-auto_prompt="false">
+                </div>
+
+                <div class="g_id_signin"
+                     data-type="standard"
+                     data-shape="rectangular"
+                     data-theme="outline"
+                     data-text="signin_with"
+                     data-size="large"
+                     data-logo_alignment="left"
+                     data-width="300">
+                </div>
+                
+                <div class="text-center mt-3">
+                    <p class="text-muted">
+                        Demo: admin@sit.edu / password123
+                    </p>
+                </div>
+            </form>
+            
+            <!-- Register Form -->
+            <form class="auth-form" id="registerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="registerFirstName" 
+                               placeholder="John" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="registerLastName" 
+                               placeholder="Doe" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="registerEmail" 
+                           placeholder="you@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" class="form-control" id="registerPassword" 
+                               placeholder="••••••••" required>
+                        <button type="button" class="password-toggle" id="registerPasswordToggle">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" class="form-control" id="registerConfirm" 
+                               placeholder="••••••••" required>
+                        <button type="button" class="password-toggle" id="registerConfirmToggle">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Council Role</label>
+                        <select class="form-control" id="registerRole" required>
+                            <option value="">Select your role</option>
+                            <option value="President">President</option>
+                            <option value="Vice President">Vice President</option>
+                            <option value="Secretary">Secretary</option>
+                            <option value="Treasurer">Treasurer</option>
+                            <option value="PRO">Public Relations Officer</option>
+                            <option value="Club Coordinator">Club Coordinator</option>
+                            <option value="Member">Council Member</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Student ID</label>
+                        <input type="text" class="form-control" id="registerStudentId" 
+                               placeholder="SIT2023XXX" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+            
+            <!-- Forgot Password Form -->
+            <form class="auth-form" id="forgotForm">
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="forgotEmail" 
+                           placeholder="you@example.com" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-key"></i> Reset Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="app-container" id="appContainer">
+        <!-- Header -->
+        <header class="header" id="header">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="header-logo">
+                <div class="logo-icon">SC</div>
+                <div class="header-title">
+                    <h1>SIT Council Portal</h1>
+                    <p>Meeting Minutes & Management System</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                
+                <button class="header-action-btn" id="notificationBtn" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationCount">3</span>
+                </button>
+                
+                <div class="dropdown" id="userDropdown">
+                    <div class="user-profile" id="userProfile">
+                        <div class="user-avatar" id="userAvatar">TH</div>
+                        <div class="user-info">
+                            <h4 id="userName">Tahir Hasan</h4>
+                            <p id="userRole">Secretary</p>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    
+                    <div class="dropdown-menu" id="userMenu">
+                        <a href="#" class="dropdown-item" data-action="profile">
+                            <i class="fas fa-user"></i> My Profile
+                        </a>
+                        <a href="#" class="dropdown-item" data-action="settings">
+                            <i class="fas fa-cog"></i> Settings
+                        </a>
+                        <div class="dropdown-item" data-action="logout">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="nav-group">
+                <div class="nav-label">Main</div>
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="#" class="nav-item" data-page="meetings">
+                    <i class="fas fa-calendar-alt"></i> Meetings
+                </a>
+                <a href="#" class="nav-item" data-page="minutes">
+                    <i class="fas fa-clipboard-list"></i> Minutes
+                </a>
+                <a href="#" class="nav-item" data-page="members">
+                    <i class="fas fa-users"></i> Members
+                </a>
+            </div>
+            
+            <div class="nav-group">
+                <div class="nav-label">Management</div>
+                <a href="#" class="nav-item" data-page="new-meeting">
+                    <i class="fas fa-plus-circle"></i> New Meeting
+                </a>
+                <a href="#" class="nav-item" data-page="agenda">
+                    <i class="fas fa-list-ol"></i> Agenda Builder
+                </a>
+                <a href="#" class="nav-item" data-page="tasks">
+                    <i class="fas fa-tasks"></i> Action Items
+                </a>
+                <a href="#" class="nav-item" data-page="archive">
+                    <i class="fas fa-archive"></i> Archive
+                </a>
+            </div>
+            
+            <div class="nav-group">
+                <div class="nav-label">Tools</div>
+                <a href="#" class="nav-item" data-page="pdf-generator">
+                    <i class="fas fa-file-pdf"></i> PDF Generator
+                </a>
+                <a href="#" class="nav-item" data-page="reports">
+                    <i class="fas fa-chart-bar"></i> Reports
+                </a>
+                <a href="#" class="nav-item" data-page="leaderboard">
+                    <i class="fas fa-trophy"></i> Leaderboard
+                </a>
+                <a href="#" class="nav-item" data-page="announcements">
+                    <i class="fas fa-bullhorn"></i> Announcements
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Dashboard Page -->
+            <div class="page-content active" id="dashboardContent">
+                <div class="page-header">
+                    <div class="page-title-section">
+                        <div class="page-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <div>
+                            <h1 class="page-title">Dashboard</h1>
+                            <p class="page-subtitle">Welcome back, <span id="greetingName">Tahir</span>!</p>
+                        </div>
+                    </div>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary" id="refreshDashboard">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="btn btn-primary" id="saveDashboard">
+                            <i class="fas fa-save"></i> Save Dashboard
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Man of the Week -->
+                <div class="man-of-week">
+                    <div class="man-header">
+                        <h3><i class="fas fa-crown"></i> Man of the Week</h3>
+                        <span class="badge">🎖️ Top Performer</span>
+                    </div>
+                    <div class="man-content">
+                        <div class="man-avatar">TH</div>
+                        <div class="man-info">
+                            <h4>Tahir Hasan</h4>
+                            <p class="man-role">Secretary</p>
+                            <p class="man-reason">Completed 15 tasks, attended 8 meetings this week</p>
+                            <div class="man-stats">
+                                <div class="stat">
+                                    <span class="stat-value">98%</span>
+                                    <span class="stat-label">Performance</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value">15</span>
+                                    <span class="stat-label">Tasks Done</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value">8</span>
+                                    <span class="stat-label">Meetings</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stats Grid -->
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3>Total Meetings</h3>
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="stat-value">24</div>
+                        <div class="stat-trend positive">
+                            <i class="fas fa-arrow-up"></i> 12% from last month
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3>Pending Tasks</h3>
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="stat-value">18</div>
+                        <div class="stat-trend negative">
+                            <i class="fas fa-arrow-down"></i> 3 overdue
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3>Member Performance</h3>
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-value">92%</div>
+                        <div class="stat-trend positive">
+                            <i class="fas fa-arrow-up"></i> 5% improvement
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3>Upcoming Meetings</h3>
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-value">5</div>
+                        <div class="stat-trend">
+                            Next: Tomorrow 2:00 PM
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Meetings & Quick Actions -->
+                <div class="content-row">
+                    <div class="content-col">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Recent Meetings</h3>
+                                <button class="btn-icon" id="viewAllMeetings">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </button>
+                            </div>
+                            <div class="meeting-list" id="recentMeetings">
+                                <!-- Dynamically loaded -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="content-col">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Quick Actions</h3>
+                            </div>
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" id="quickMeeting">
+                                    <i class="fas fa-plus"></i>
+                                    <span>New Meeting</span>
+                                </button>
+                                <button class="quick-action-btn" id="quickMinutes">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>Create Minutes</span>
+                                </button>
+                                <button class="quick-action-btn" id="quickReport">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <span>Generate Report</span>
+                                </button>
+                                <button class="quick-action-btn" id="quickAnnouncement">
+                                    <i class="fas fa-bullhorn"></i>
+                                    <span>New Announcement</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Upcoming Meetings Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Upcoming Meetings</h3>
+                        <button class="btn btn-primary" id="addUpcomingMeeting">
+                            <i class="fas fa-plus"></i> Add Meeting
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="upcomingMeetingsTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Time</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamically loaded -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- New Meeting Page -->
+            <div class="page-content" id="newMeetingContent">
+                <div class="page-header">
+                    <div class="page-title-section">
+                        <div class="page-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <div>
+                            <h1 class="page-title">Create New Meeting</h1>
+                            <p class="page-subtitle">Schedule and plan council meetings</p>
+                        </div>
+                    </div>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary" id="saveMeetingDraft">
+                            <i class="fas fa-save"></i> Save Draft
+                        </button>
+                        <button class="btn btn-primary" id="createMeeting">
+                            <i class="fas fa-check"></i> Create Meeting
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="section-title">Meeting Details</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Meeting Title *</label>
+                            <input type="text" id="meetingTitle" class="form-control" 
+                                   placeholder="Monthly Council Meeting">
+                        </div>
+                        <div class="form-group">
+                            <label>Meeting Type *</label>
+                            <select id="meetingType" class="form-control">
+                                <option value="regular">Regular Meeting</option>
+                                <option value="random">Random/Urgent Meeting</option>
+                                <option value="special">Special Session</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" id="meetingDate" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Start Time *</label>
+                            <input type="time" id="meetingStartTime" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>End Time *</label>
+                            <input type="time" id="meetingEndTime" class="form-control">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="meetingLocation" class="form-control" 
+                               placeholder="Conference Room A">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Meeting Objective</label>
+                        <textarea id="meetingObjective" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Agenda Items</h3>
+                        <button type="button" class="btn btn-primary" id="addAgendaItem">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                    <div id="agendaItemsContainer">
+                        <!-- Agenda items will be added here -->
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="section-title">Attendees</h3>
+                    <div class="attendee-selection">
+                        <div class="form-group">
+                            <label>Select Attendees *</label>
+                            <div id="attendeeList">
+                                <!-- Member checkboxes -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="section-title">Documents & Files</h3>
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                        <p>Drag & drop files here or click to browse</p>
+                        <input type="file" id="fileInput" multiple style="display: none;">
+                        <button class="btn btn-secondary" id="browseFiles">
+                            <i class="fas fa-folder-open"></i> Browse Files
+                        </button>
+                    </div>
+                    <div id="uploadedFilesList"></div>
+                </div>
+            </div>
+            
+            <!-- PDF Generator Page -->
+            <div class="page-content" id="pdfGeneratorContent">
+                <div class="page-header">
+                    <div class="page-title-section">
+                        <div class="page-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div>
+                            <h1 class="page-title">PDF Generator</h1>
+                            <p class="page-subtitle">Create professional meeting minutes</p>
+                        </div>
+                    </div>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary" id="previewPDF">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                        <button class="btn btn-primary" id="generatePDF">
+                            <i class="fas fa-download"></i> Generate PDF
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="pdf-preview-container" id="pdfPreview">
+                    <!-- PDF preview will be generated here -->
+                </div>
+            </div>
+            
+            <!-- Announcements Page -->
+            <div class="page-content" id="announcementsContent">
+                <div class="page-header">
+                    <div class="page-title-section">
+                        <div class="page-icon">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
+                        <div>
+                            <h1 class="page-title">Announcements</h1>
+                            <p class="page-subtitle">Important updates and news</p>
+                        </div>
+                    </div>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" id="newAnnouncement">
+                            <i class="fas fa-plus"></i> New Announcement
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="announcements-list" id="announcementsList">
+                    <!-- Announcements will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Add more page contents as needed -->
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="agendaItemModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Add Agenda Item</h2>
+                <button class="modal-close" id="closeAgendaModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Agenda item form -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // ==================== ENHANCED DATABASE SIMULATION ====================
+        class CouncilDatabase {
+            constructor() {
+                this.initDatabase();
+            }
+            
+            initDatabase() {
+                // Load from localStorage or initialize
+                const savedDB = localStorage.getItem('sit_council_database');
+                if (savedDB) {
+                    this.db = JSON.parse(savedDB);
+                } else {
+                    this.db = this.createDefaultDatabase();
+                    this.saveToStorage();
+                }
+            }
+            
+            createDefaultDatabase() {
+                return {
+                    version: '3.0.0',
+                    lastUpdated: new Date().toISOString(),
+                    
+                    users: [
+                        {
+                            id: 1,
+                            firstName: 'Ibrahim',
+                            lastName: 'Mohammed',
+                            email: 'president@sit.edu',
+                            role: 'President',
+                            studentId: 'SIT2023001',
+                            avatar: 'IM',
+                            department: 'Computer Science',
+                            year: '4th Year',
+                            isActive: true,
+                            password: 'password123',
+                            permissions: ['all'],
+                            performance: {
+                                meetingsAttended: 45,
+                                tasksCompleted: 89,
+                                rating: 4.8
+                            }
+                        },
+                        {
+                            id: 2,
+                            firstName: 'Asli',
+                            lastName: 'Ahmed',
+                            email: 'vice.president@sit.edu',
+                            role: 'Vice President',
+                            studentId: 'SIT2023002',
+                            avatar: 'AA',
+                            department: 'Business',
+                            year: '3rd Year',
+                            isActive: true,
+                            password: 'password123',
+                            permissions: ['view', 'edit'],
+                            performance: {
+                                meetingsAttended: 42,
+                                tasksCompleted: 76,
+                                rating: 4.6
+                            }
+                        },
+                        {
+                            id: 3,
+                            firstName: 'Tahir',
+                            lastName: 'Hasan',
+                            email: 'secretary@sit.edu',
+                            role: 'Secretary',
+                            studentId: 'SIT2023003',
+                            avatar: 'TH',
+                            department: 'Engineering',
+                            year: '3rd Year',
+                            isActive: true,
+                            password: 'password123',
+                            permissions: ['all'],
+                            performance: {
+                                meetingsAttended: 48,
+                                tasksCompleted: 95,
+                                rating: 4.9
+                            }
+                        },
+                        {
+                            id: 4,
+                            firstName: 'Kaeb',
+                            lastName: 'Engidawork',
+                            email: 'treasurer@sit.edu',
+                            role: 'Treasurer',
+                            studentId: 'SIT2023004',
+                            avatar: 'KE',
+                            department: 'Finance',
+                            year: '2nd Year',
+                            isActive: true,
+                            password: 'password123',
+                            permissions: ['view', 'edit'],
+                            performance: {
+                                meetingsAttended: 40,
+                                tasksCompleted: 72,
+                                rating: 4.7
+                            }
+                        },
+                        {
+                            id: 5,
+                            firstName: 'Eba',
+                            lastName: 'Wakshum',
+                            email: 'pro@sit.edu',
+                            role: 'PRO',
+                            studentId: 'SIT2023005',
+                            avatar: 'EW',
+                            department: 'Communications',
+                            year: '3rd Year',
+                            isActive: true,
+                            password: 'password123',
+                            permissions: ['view', 'edit'],
+                            performance: {
+                                meetingsAttended: 38,
+                                tasksCompleted: 65,
+                                rating: 4.5
+                            }
+                        },
+                        {
+                            id: 6,
+                            firstName: 'Ramadan',
+                            lastName: 'Genemo',
+                            email: 'coordinator@sit.edu',
+                            role: 'Club Coordinator',
+                            studentId: 'SIT2023006',
+                            avatar: 'RG',
+                            department: 'Management',
+                            year: '4th Year',
+                            isActive: true,
+                            password: 'password123',
+                            permissions: ['view', 'edit'],
+                            performance: {
+                                meetingsAttended: 35,
+                                tasksCompleted: 60,
+                                rating: 4.4
+                            }
+                        },
+                        {
+                            id: 7,
+                            firstName: 'Solomon',
+                            lastName: 'Dawit',
+                            email: 'member1@sit.edu',
+                            role: 'Member',
+                            studentId: 'SIT2023007',
+                            avatar: 'SD',
+                            department: 'Science',
+                            year: '2nd Year',
+                            isActive: true,
+                            password: 'password123',
+                            permissions: ['view'],
+                            performance: {
+                                meetingsAttended: 32,
+                                tasksCompleted: 55,
+                                rating: 4.2
+                            }
+                        },
+                        {
+                            id: 8,
+                            firstName: 'Melikete',
+                            lastName: 'Yohanes',
+                            email: 'member2@sit.edu',
+                            role: 'Member',
+                            studentId: 'SIT2023008',
+                            avatar: 'MY',
+                            department: 'Arts',
+                            year: '3rd Year',
+                            isActive: true,
+                            password: 'password123',
+                            permissions: ['view'],
+                            performance: {
+                                meetingsAttended: 30,
+                                tasksCompleted: 52,
+                                rating: 4.1
+                            }
+                        },
+                        {
+                            id: 9,
+                            firstName: 'Barok',
+                            lastName: 'Mulatu',
+                            email: 'member3@sit.edu',
+                            role: 'Member',
+                            studentId: 'SIT2023009',
+                            avatar: 'BM',
+                            department: 'Engineering',
+                            year: '4th Year',
+                            isActive: true,
+                            password: 'password123',
+                            permissions: ['view'],
+                            performance: {
+                                meetingsAttended: 28,
+                                tasksCompleted: 48,
+                                rating: 4.0
+                            }
+                        },
+                        {
+                            id: 10,
+                            firstName: 'Saron',
+                            lastName: 'Fiseha',
+                            email: 'member4@sit.edu',
+                            role: 'Member',
+                            studentId: 'SIT2023010',
+                            avatar: 'SF',
+                            department: 'Business',
+                            year: '2nd Year',
+                            isActive: true,
+                            password: 'password123',
+                            permissions: ['view'],
+                            performance: {
+                                meetingsAttended: 25,
+                                tasksCompleted: 45,
+                                rating: 3.9
+                            }
+                        }
+                    ],
+                    
+                    meetings: [],
+                    
+                    minutes: [],
+                    
+                    announcements: [],
+                    
+                    actionItems: [],
+                    
+                    settings: {
+                        theme: 'light',
+                        notifications: true,
+                        autoSave: true,
+                        defaultMeetingType: 'regular'
+                    }
+                };
+            }
+            
+            saveToStorage() {
+                this.db.lastUpdated = new Date().toISOString();
+                localStorage.setItem('sit_council_database', JSON.stringify(this.db));
+            }
+            
+            getUserByEmail(email) {
+                return this.db.users.find(user => user.email === email);
+            }
+            
+            getUserById(id) {
+                return this.db.users.find(user => user.id === id);
+            }
+            
+            addMeeting(meeting) {
+                meeting.id = Date.now();
+                meeting.createdAt = new Date().toISOString();
+                meeting.updatedAt = new Date().toISOString();
+                this.db.meetings.push(meeting);
+                this.saveToStorage();
+                return meeting;
+            }
+            
+            addMinutes(minutes) {
+                minutes.id = Date.now();
+                minutes.createdAt = new Date().toISOString();
+                this.db.minutes.push(minutes);
+                this.saveToStorage();
+                return minutes;
+            }
+            
+            addAnnouncement(announcement) {
+                announcement.id = Date.now();
+                announcement.createdAt = new Date().toISOString();
+                this.db.announcements.push(announcement);
+                this.saveToStorage();
+                return announcement;
+            }
+            
+            getRecentMeetings(limit = 5) {
+                return this.db.meetings
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .slice(0, limit);
+            }
+            
+            getUpcomingMeetings() {
+                const today = new Date().toISOString().split('T')[0];
+                return this.db.meetings
+                    .filter(m => m.date >= today)
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+            }
+        }
+
+        // ==================== APPLICATION CLASS ====================
+        class CouncilApp {
+            constructor() {
+                this.db = new CouncilDatabase();
+                this.currentUser = null;
+                this.currentPage = 'dashboard';
+                this.init();
+            }
+            
+            init() {
+                this.loadCurrentUser();
+                this.setupEventListeners();
+                this.checkAuthentication();
+                this.loadPage();
+            }
+            
+            loadCurrentUser() {
+                const savedUser = localStorage.getItem('sit_council_current_user');
+                if (savedUser) {
+                    this.currentUser = JSON.parse(savedUser);
+                }
+            }
+            
+            saveCurrentUser() {
+                if (this.currentUser) {
+                    localStorage.setItem('sit_council_current_user', JSON.stringify(this.currentUser));
+                }
+            }
+            
+            checkAuthentication() {
+                if (this.currentUser) {
+                    this.showApp();
+                } else {
+                    this.showAuth();
+                }
+            }
+            
+            showAuth() {
+                document.getElementById('authContainer').style.display = 'flex';
+                document.getElementById('appContainer').style.display = 'none';
+            }
+            
+            showApp() {
+                document.getElementById('authContainer').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+                this.updateUserInfo();
+                this.loadDashboard();
+            }
+            
+            updateUserInfo() {
+                if (!this.currentUser) return;
+                
+                document.getElementById('userName').textContent = 
+                    `${this.currentUser.firstName} ${this.currentUser.lastName}`;
+                document.getElementById('userRole').textContent = this.currentUser.role;
+                document.getElementById('userAvatar').textContent = this.currentUser.avatar;
+                document.getElementById('greetingName').textContent = this.currentUser.firstName;
+            }
+            
+            login(email, password) {
+                const user = this.db.getUserByEmail(email);
+                if (user && user.password === password) {
+                    this.currentUser = user;
+                    this.saveCurrentUser();
+                    this.showApp();
+                    this.showToast('Login successful!', 'success');
+                    return true;
+                }
+                this.showToast('Invalid email or password', 'error');
+                return false;
+            }
+            
+            logout() {
+                this.currentUser = null;
+                localStorage.removeItem('sit_council_current_user');
+                this.showAuth();
+                this.showToast('Logged out successfully', 'info');
+            }
+            
+            navigateTo(page) {
+                this.currentPage = page;
+                this.loadPage();
+            }
+            
+            loadPage() {
+                // Hide all pages
+                document.querySelectorAll('.page-content').forEach(page => {
+                    page.classList.remove('active');
+                });
+                
+                // Show current page
+                const pageElement = document.getElementById(`${this.currentPage}Content`);
+                if (pageElement) {
+                    pageElement.classList.add('active');
+                }
+                
+                // Update navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                const navItem = document.querySelector(`.nav-item[data-page="${this.currentPage}"]`);
+                if (navItem) {
+                    navItem.classList.add('active');
+                }
+                
+                // Load page data
+                switch(this.currentPage) {
+                    case 'dashboard':
+                        this.loadDashboard();
+                        break;
+                    case 'new-meeting':
+                        this.loadMeetingForm();
+                        break;
+                    case 'pdf-generator':
+                        this.loadPDFGenerator();
+                        break;
+                    case 'announcements':
+                        this.loadAnnouncements();
+                        break;
+                }
+            }
+            
+            loadDashboard() {
+                this.updateStats();
+                this.loadRecentMeetings();
+                this.loadUpcomingMeetings();
+                this.updateManOfTheWeek();
+            }
+            
+            updateStats() {
+                const meetings = this.db.db.meetings;
+                const today = new Date().toISOString().split('T')[0];
+                
+                const totalMeetings = meetings.length;
+                const upcomingMeetings = meetings.filter(m => m.date >= today).length;
+                const regularMeetings = meetings.filter(m => m.type === 'regular').length;
+                const randomMeetings = meetings.filter(m => m.type === 'random').length;
+                
+                // Update stats in UI
+                const statElements = {
+                    totalMeetings: totalMeetings,
+                    upcomingMeetings: upcomingMeetings,
+                    regularMeetings: regularMeetings,
+                    randomMeetings: randomMeetings
+                };
+                
+                // You would update actual DOM elements here
+            }
+            
+            loadRecentMeetings() {
+                const meetings = this.db.getRecentMeetings(5);
+                const container = document.getElementById('recentMeetings');
+                if (container) {
+                    container.innerHTML = meetings.map(meeting => `
+                        <div class="meeting-item">
+                            <div class="meeting-date">${this.formatDate(meeting.date)}</div>
+                            <div class="meeting-title">${meeting.title}</div>
+                            <div class="meeting-type ${meeting.type}">${meeting.type}</div>
+                        </div>
+                    `).join('');
+                }
+            }
+            
+            loadUpcomingMeetings() {
+                const meetings = this.db.getUpcomingMeetings();
+                const table = document.getElementById('upcomingMeetingsTable');
+                if (table) {
+                    table.innerHTML = meetings.map(meeting => `
+                        <tr>
+                            <td>${this.formatDate(meeting.date)}</td>
+                            <td>${meeting.title}</td>
+                            <td><span class="badge ${meeting.type}">${meeting.type}</span></td>
+                            <td>${meeting.startTime} - ${meeting.endTime}</td>
+                            <td>${meeting.location || 'TBA'}</td>
+                            <td><span class="status scheduled">Scheduled</span></td>
+                            <td>
+                                <button class="btn-icon" onclick="app.editMeeting(${meeting.id})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            }
+            
+            updateManOfTheWeek() {
+                // Find top performer based on performance rating
+                const topPerformer = this.db.db.users
+                    .filter(u => u.isActive)
+                    .sort((a, b) => b.performance.rating - a.performance.rating)[0];
+                
+                if (topPerformer) {
+                    const manOfWeek = document.querySelector('.man-of-week .man-content');
+                    if (manOfWeek) {
+                        manOfWeek.innerHTML = `
+                            <div class="man-avatar">${topPerformer.avatar}</div>
+                            <div class="man-info">
+                                <h4>${topPerformer.firstName} ${topPerformer.lastName}</h4>
+                                <p class="man-role">${topPerformer.role}</p>
+                                <p class="man-reason">Top performer with ${topPerformer.performance.rating}/5 rating</p>
+                                <div class="man-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">${topPerformer.performance.meetingsAttended}</span>
+                                        <span class="stat-label">Meetings</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">${topPerformer.performance.tasksCompleted}</span>
+                                        <span class="stat-label">Tasks</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">${topPerformer.performance.rating}</span>
+                                        <span class="stat-label">Rating</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            }
+            
+            loadMeetingForm() {
+                // Load members for attendee selection
+                const memberList = document.getElementById('attendeeList');
+                if (memberList) {
+                    memberList.innerHTML = this.db.db.users
+                        .filter(user => user.isActive)
+                        .map(user => `
+                            <div class="member-checkbox">
+                                <input type="checkbox" id="member-${user.id}" value="${user.id}">
+                                <label for="member-${user.id}">
+                                    ${user.firstName} ${user.lastName} (${user.role})
+                                </label>
+                            </div>
+                        `).join('');
+                }
+                
+                // Set default date to tomorrow
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                document.getElementById('meetingDate').value = tomorrow.toISOString().split('T')[0];
+                
+                // Set default times
+                document.getElementById('meetingStartTime').value = '14:00';
+                document.getElementById('meetingEndTime').value = '16:00';
+            }
+            
+            createNewMeeting() {
+                const title = document.getElementById('meetingTitle').value;
+                const type = document.getElementById('meetingType').value;
+                const date = document.getElementById('meetingDate').value;
+                const startTime = document.getElementById('meetingStartTime').value;
+                const endTime = document.getElementById('meetingEndTime').value;
+                const location = document.getElementById('meetingLocation').value;
+                const objective = document.getElementById('meetingObjective').value;
+                
+                // Get selected attendees
+                const attendees = [];
+                document.querySelectorAll('#attendeeList input:checked').forEach(checkbox => {
+                    attendees.push(parseInt(checkbox.value));
+                });
+                
+                const meeting = {
+                    title,
+                    type,
+                    date,
+                    startTime,
+                    endTime,
+                    location,
+                    objective,
+                    attendees,
+                    createdBy: this.currentUser.id,
+                    status: 'scheduled'
+                };
+                
+                this.db.addMeeting(meeting);
+                this.showToast('Meeting created successfully!', 'success');
+                this.navigateTo('dashboard');
+            }
+            
+            loadPDFGenerator() {
+                // Load meetings for PDF generation
+                const meetings = this.db.db.meetings;
+                // Generate PDF preview
+                this.generatePDFPreview();
+            }
+            
+            generatePDFPreview() {
+                const preview = document.getElementById('pdfPreview');
+                if (!preview) return;
+                
+                // Sample PDF preview based on your image
+                preview.innerHTML = `
+                    <div class="pdf-template">
+                        <div class="pdf-header">
+                            <h1>STUDENT COUNCIL MEETING MINUTES</h1>
+                            <div class="pdf-meta">
+                                <div><strong>Date:</strong> <span id="pdfDate">${this.formatDate(new Date())}</span></div>
+                                <div><strong>Time:</strong> <span id="pdfTime">14:00 - 16:00</span></div>
+                                <div><strong>Venue:</strong> <span id="pdfVenue">Conference Room A</span></div>
+                                <div><strong>Meeting Type:</strong> <span id="pdfType">Regular</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="pdf-section">
+                            <h2>Attendance</h2>
+                            <table class="pdf-table">
+                                <thead>
+                                    <tr>
+                                        <th>Attendees</th>
+                                        <th>Role</th>
+                                        <th>Absent</th>
+                                        <th>Role</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pdfAttendance">
+                                    <!-- Attendance will be populated -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="pdf-section">
+                            <h2>Agenda</h2>
+                            <ol id="pdfAgenda">
+                                <!-- Agenda items will be populated -->
+                            </ol>
+                        </div>
+                        
+                        <div class="pdf-section">
+                            <h2>Discussion & Decisions</h2>
+                            <div id="pdfDecisions">
+                                <!-- Decisions will be populated -->
+                            </div>
+                        </div>
+                        
+                        <div class="pdf-signature">
+                            <div class="signature-block">
+                                <p>Prepared by:</p>
+                                <p><strong>Secretary: </strong>Tahir Hasan</p>
+                            </div>
+                            <div class="signature-block">
+                                <p>Approved by:</p>
+                                <p><strong>Chairperson: </strong>___________________</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            generatePDF() {
+                // In a real implementation, use jsPDF or similar library
+                // For demo, create a downloadable HTML file
+                const content = document.getElementById('pdfPreview').innerHTML;
+                const blob = new Blob([`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 40px; }
+                            .pdf-header { text-align: center; margin-bottom: 40px; }
+                            .pdf-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                            .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 8px; }
+                            .pdf-section { margin: 30px 0; }
+                            .signature-block { margin-top: 60px; }
+                        </style>
+                    </head>
+                    <body>
+                        ${content}
+                    </body>
+                    </html>
+                `], { type: 'text/html' });
+                
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `meeting-minutes-${new Date().toISOString().split('T')[0]}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showToast('PDF generated successfully!', 'success');
+            }
+            
+            loadAnnouncements() {
+                const announcements = this.db.db.announcements;
+                const container = document.getElementById('announcementsList');
+                if (container) {
+                    if (announcements.length === 0) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-bullhorn fa-3x"></i>
+                                <p>No announcements yet</p>
+                            </div>
+                        `;
+                    } else {
+                        container.innerHTML = announcements.map(announcement => `
+                            <div class="announcement-card">
+                                <div class="announcement-header">
+                                    <h3>${announcement.title}</h3>
+                                    <span class="announcement-date">${this.formatDate(announcement.createdAt)}</span>
+                                </div>
+                                <div class="announcement-content">
+                                    ${announcement.content}
+                                </div>
+                                <div class="announcement-footer">
+                                    <span class="announcement-author">By: ${announcement.author}</span>
+                                    ${this.currentUser.role === 'Secretary' || this.currentUser.role === 'President' ? `
+                                        <button class="btn-icon" onclick="app.deleteAnnouncement(${announcement.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            }
+            
+            createAnnouncement() {
+                const title = prompt('Enter announcement title:');
+                if (!title) return;
+                
+                const content = prompt('Enter announcement content:');
+                if (!content) return;
+                
+                const announcement = {
+                    title,
+                    content,
+                    author: `${this.currentUser.firstName} ${this.currentUser.lastName}`,
+                    priority: 'normal'
+                };
+                
+                this.db.addAnnouncement(announcement);
+                this.showToast('Announcement created!', 'success');
+                this.loadAnnouncements();
+            }
+            
+            setupEventListeners() {
+                // Theme toggle
+                document.getElementById('themeToggle').addEventListener('click', () => {
+                    this.toggleTheme();
+                });
+                
+                // Login form
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('loginEmail').value;
+                    const password = document.getElementById('loginPassword').value;
+                    this.login(email, password);
+                });
+                
+                // Logout
+                document.querySelector('[data-action="logout"]').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.logout();
+                });
+                
+                // Navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const page = e.currentTarget.dataset.page;
+                        this.navigateTo(page);
+                    });
+                });
+                
+                // Create meeting button
+                document.getElementById('createMeeting').addEventListener('click', () => {
+                    this.createNewMeeting();
+                });
+                
+                // Generate PDF button
+                document.getElementById('generatePDF').addEventListener('click', () => {
+                    this.generatePDF();
+                });
+                
+                // New announcement button
+                document.getElementById('newAnnouncement').addEventListener('click', () => {
+                    this.createAnnouncement();
+                });
+                
+                // Save dashboard button
+                document.getElementById('saveDashboard').addEventListener('click', () => {
+                    this.saveDashboardState();
+                });
+                
+                // File upload
+                document.getElementById('browseFiles').addEventListener('click', () => {
+                    document.getElementById('fileInput').click();
+                });
+                
+                document.getElementById('fileInput').addEventListener('change', (e) => {
+                    this.handleFileUpload(e.target.files);
+                });
+                
+                // Google Sign-In callback
+                window.handleGoogleSignIn = (response) => {
+                    this.handleGoogleResponse(response);
+                };
+            }
+            
+            toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                
+                // Update icon
+                const icon = document.querySelector('#themeToggle i');
+                icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+                
+                // Save preference
+                this.db.db.settings.theme = newTheme;
+                this.db.saveToStorage();
+            }
+            
+            handleGoogleResponse(response) {
+                // Decode the JWT token
+                const responsePayload = JSON.parse(atob(response.credential.split('.')[1]));
+                
+                // Create or get user from Google
+                const googleUser = {
+                    firstName: responsePayload.given_name,
+                    lastName: responsePayload.family_name,
+                    email: responsePayload.email,
+                    avatar: (responsePayload.given_name[0] + responsePayload.family_name[0]).toUpperCase(),
+                    role: 'Member', // Default role
+                    isGoogleUser: true
+                };
+                
+                // Check if user exists
+                let user = this.db.getUserByEmail(googleUser.email);
+                if (!user) {
+                    // Create new user
+                    user = {
+                        ...googleUser,
+                        id: this.db.db.users.length + 1,
+                        studentId: `GOOGLE-${Date.now()}`,
+                        isActive: true,
+                        password: 'google-auth',
+                        permissions: ['view'],
+                        performance: {
+                            meetingsAttended: 0,
+                            tasksCompleted: 0,
+                            rating: 0
+                        }
+                    };
+                    this.db.db.users.push(user);
+                    this.db.saveToStorage();
+                }
+                
+                this.currentUser = user;
+                this.saveCurrentUser();
+                this.showApp();
+                this.showToast('Signed in with Google!', 'success');
+            }
+            
+            handleFileUpload(files) {
+                const fileList = document.getElementById('uploadedFilesList');
+                fileList.innerHTML = '';
+                
+                Array.from(files).forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <i class="fas fa-file"></i>
+                        <span>${file.name}</span>
+                        <span class="file-size">(${this.formatFileSize(file.size)})</span>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+                
+                this.showToast(`${files.length} file(s) uploaded`, 'success');
+            }
+            
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            saveDashboardState() {
+                const dashboardState = {
+                    widgets: {},
+                    layout: {},
+                    lastSaved: new Date().toISOString()
+                };
+                localStorage.setItem('sit_council_dashboard', JSON.stringify(dashboardState));
+                this.showToast('Dashboard saved!', 'success');
+            }
+            
+            showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                toast.innerHTML = `
+                    <div class="toast-content">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                                          type === 'error' ? 'exclamation-circle' : 
+                                          'info-circle'}"></i>
+                        <span>${message}</span>
+                    </div>
+                    <button class="toast-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                document.getElementById('toastContainer').appendChild(toast);
+                
+                // Show animation
+                setTimeout(() => toast.classList.add('show'), 10);
+                
+                // Close button
+                toast.querySelector('.toast-close').addEventListener('click', () => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                });
+                
+                // Auto remove
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.classList.remove('show');
+                        setTimeout(() => toast.remove(), 300);
+                    }
+                }, 5000);
+            }
+            
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+        }
+
+        // ==================== INITIALIZE APPLICATION ====================
+        let app;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Hide loading
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }, 1000);
+            
+            // Initialize app
+            app = new CouncilApp();
+            window.app = app; // Make accessible globally
+            
+            // Setup additional event listeners
+            setupAdditionalListeners();
+        });
+        
+        function setupAdditionalListeners() {
+            // Menu toggle for mobile
+            document.getElementById('menuToggle').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('active');
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                const sidebar = document.getElementById('sidebar');
+                const menuToggle = document.getElementById('menuToggle');
+                if (window.innerWidth <= 768 && 
+                    !sidebar.contains(e.target) && 
+                    !menuToggle.contains(e.target) &&
+                    sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            });
+            
+            // Password visibility toggle
+            document.querySelectorAll('.password-toggle').forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const input = this.previousElementSibling;
+                    const icon = this.querySelector('i');
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                });
+            });
+            
+            // Auth tabs switching
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Update active tab
+                    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding form
+                    const formId = this.dataset.form;
+                    document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+                    document.getElementById(`${formId}Form`).classList.add('active');
+                });
+            });
+            
+            // Register form submission
+            document.getElementById('registerForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                // Add registration logic here
+                app.showToast('Registration functionality would be implemented here', 'info');
+            });
+            
+            // Forgot password form
+            document.getElementById('forgotForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('forgotEmail').value;
+                app.showToast(`Password reset instructions sent to ${email}`, 'info');
+            });
+        }
+    </script>
+</body>
+</html>
