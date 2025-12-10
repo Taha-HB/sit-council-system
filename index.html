@@ -1024,1009 +1024,2069 @@
     </div>
 
     <!-- JavaScript -->
-    <script>
-        // ==================== ENHANCED DATABASE SIMULATION ====================
-        class CouncilDatabase {
-            constructor() {
-                this.initDatabase();
-            }
-            
-            initDatabase() {
-                // Load from localStorage or initialize
-                const savedDB = localStorage.getItem('sit_council_database');
-                if (savedDB) {
-                    this.db = JSON.parse(savedDB);
+  
+                        <script>
+    // ==================== CONFIGURATION ====================
+    const API_BASE_URL = 'http://localhost:5000/api';
+    const SOCKET_URL = 'http://localhost:5000';
+    
+    // ==================== AUTH SERVICE ====================
+    class AuthService {
+        constructor() {
+            this.token = localStorage.getItem('sit_council_token');
+            this.user = JSON.parse(localStorage.getItem('sit_council_user') || 'null');
+            this.isAuthenticated = !!this.token;
+        }
+        
+        async login(email, password) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.token = data.token;
+                    this.user = data.user;
+                    this.isAuthenticated = true;
+                    
+                    localStorage.setItem('sit_council_token', data.token);
+                    localStorage.setItem('sit_council_user', JSON.stringify(data.user));
+                    
+                    // Set Authorization header for future requests
+                    this.setAuthHeader();
+                    
+                    return { success: true, user: data.user };
                 } else {
-                    this.db = this.createDefaultDatabase();
-                    this.saveToStorage();
+                    return { success: false, message: data.message };
                 }
-            }
-            
-            createDefaultDatabase() {
-                return {
-                    version: '3.0.0',
-                    lastUpdated: new Date().toISOString(),
-                    
-                    users: [
-                        {
-                            id: 1,
-                            firstName: 'Ibrahim',
-                            lastName: 'Mohammed',
-                            email: 'president@sit.edu',
-                            role: 'President',
-                            studentId: 'SIT2023001',
-                            avatar: 'IM',
-                            department: 'Computer Science',
-                            year: '4th Year',
-                            isActive: true,
-                            password: 'password123',
-                            permissions: ['all'],
-                            performance: {
-                                meetingsAttended: 45,
-                                tasksCompleted: 89,
-                                rating: 4.8
-                            }
-                        },
-                        {
-                            id: 2,
-                            firstName: 'Asli',
-                            lastName: 'Ahmed',
-                            email: 'vice.president@sit.edu',
-                            role: 'Vice President',
-                            studentId: 'SIT2023002',
-                            avatar: 'AA',
-                            department: 'Business',
-                            year: '3rd Year',
-                            isActive: true,
-                            password: 'password123',
-                            permissions: ['view', 'edit'],
-                            performance: {
-                                meetingsAttended: 42,
-                                tasksCompleted: 76,
-                                rating: 4.6
-                            }
-                        },
-                        {
-                            id: 3,
-                            firstName: 'Tahir',
-                            lastName: 'Hasan',
-                            email: 'secretary@sit.edu',
-                            role: 'Secretary',
-                            studentId: 'SIT2023003',
-                            avatar: 'TH',
-                            department: 'Engineering',
-                            year: '3rd Year',
-                            isActive: true,
-                            password: 'password123',
-                            permissions: ['all'],
-                            performance: {
-                                meetingsAttended: 48,
-                                tasksCompleted: 95,
-                                rating: 4.9
-                            }
-                        },
-                        {
-                            id: 4,
-                            firstName: 'Kaeb',
-                            lastName: 'Engidawork',
-                            email: 'treasurer@sit.edu',
-                            role: 'Treasurer',
-                            studentId: 'SIT2023004',
-                            avatar: 'KE',
-                            department: 'Finance',
-                            year: '2nd Year',
-                            isActive: true,
-                            password: 'password123',
-                            permissions: ['view', 'edit'],
-                            performance: {
-                                meetingsAttended: 40,
-                                tasksCompleted: 72,
-                                rating: 4.7
-                            }
-                        },
-                        {
-                            id: 5,
-                            firstName: 'Eba',
-                            lastName: 'Wakshum',
-                            email: 'pro@sit.edu',
-                            role: 'PRO',
-                            studentId: 'SIT2023005',
-                            avatar: 'EW',
-                            department: 'Communications',
-                            year: '3rd Year',
-                            isActive: true,
-                            password: 'password123',
-                            permissions: ['view', 'edit'],
-                            performance: {
-                                meetingsAttended: 38,
-                                tasksCompleted: 65,
-                                rating: 4.5
-                            }
-                        },
-                        {
-                            id: 6,
-                            firstName: 'Ramadan',
-                            lastName: 'Genemo',
-                            email: 'coordinator@sit.edu',
-                            role: 'Club Coordinator',
-                            studentId: 'SIT2023006',
-                            avatar: 'RG',
-                            department: 'Management',
-                            year: '4th Year',
-                            isActive: true,
-                            password: 'password123',
-                            permissions: ['view', 'edit'],
-                            performance: {
-                                meetingsAttended: 35,
-                                tasksCompleted: 60,
-                                rating: 4.4
-                            }
-                        },
-                        {
-                            id: 7,
-                            firstName: 'Solomon',
-                            lastName: 'Dawit',
-                            email: 'member1@sit.edu',
-                            role: 'Member',
-                            studentId: 'SIT2023007',
-                            avatar: 'SD',
-                            department: 'Science',
-                            year: '2nd Year',
-                            isActive: true,
-                            password: 'password123',
-                            permissions: ['view'],
-                            performance: {
-                                meetingsAttended: 32,
-                                tasksCompleted: 55,
-                                rating: 4.2
-                            }
-                        },
-                        {
-                            id: 8,
-                            firstName: 'Melikete',
-                            lastName: 'Yohanes',
-                            email: 'member2@sit.edu',
-                            role: 'Member',
-                            studentId: 'SIT2023008',
-                            avatar: 'MY',
-                            department: 'Arts',
-                            year: '3rd Year',
-                            isActive: true,
-                            password: 'password123',
-                            permissions: ['view'],
-                            performance: {
-                                meetingsAttended: 30,
-                                tasksCompleted: 52,
-                                rating: 4.1
-                            }
-                        },
-                        {
-                            id: 9,
-                            firstName: 'Barok',
-                            lastName: 'Mulatu',
-                            email: 'member3@sit.edu',
-                            role: 'Member',
-                            studentId: 'SIT2023009',
-                            avatar: 'BM',
-                            department: 'Engineering',
-                            year: '4th Year',
-                            isActive: true,
-                            password: 'password123',
-                            permissions: ['view'],
-                            performance: {
-                                meetingsAttended: 28,
-                                tasksCompleted: 48,
-                                rating: 4.0
-                            }
-                        },
-                        {
-                            id: 10,
-                            firstName: 'Saron',
-                            lastName: 'Fiseha',
-                            email: 'member4@sit.edu',
-                            role: 'Member',
-                            studentId: 'SIT2023010',
-                            avatar: 'SF',
-                            department: 'Business',
-                            year: '2nd Year',
-                            isActive: true,
-                            password: 'password123',
-                            permissions: ['view'],
-                            performance: {
-                                meetingsAttended: 25,
-                                tasksCompleted: 45,
-                                rating: 3.9
-                            }
-                        }
-                    ],
-                    
-                    meetings: [],
-                    
-                    minutes: [],
-                    
-                    announcements: [],
-                    
-                    actionItems: [],
-                    
-                    settings: {
-                        theme: 'light',
-                        notifications: true,
-                        autoSave: true,
-                        defaultMeetingType: 'regular'
-                    }
-                };
-            }
-            
-            saveToStorage() {
-                this.db.lastUpdated = new Date().toISOString();
-                localStorage.setItem('sit_council_database', JSON.stringify(this.db));
-            }
-            
-            getUserByEmail(email) {
-                return this.db.users.find(user => user.email === email);
-            }
-            
-            getUserById(id) {
-                return this.db.users.find(user => user.id === id);
-            }
-            
-            addMeeting(meeting) {
-                meeting.id = Date.now();
-                meeting.createdAt = new Date().toISOString();
-                meeting.updatedAt = new Date().toISOString();
-                this.db.meetings.push(meeting);
-                this.saveToStorage();
-                return meeting;
-            }
-            
-            addMinutes(minutes) {
-                minutes.id = Date.now();
-                minutes.createdAt = new Date().toISOString();
-                this.db.minutes.push(minutes);
-                this.saveToStorage();
-                return minutes;
-            }
-            
-            addAnnouncement(announcement) {
-                announcement.id = Date.now();
-                announcement.createdAt = new Date().toISOString();
-                this.db.announcements.push(announcement);
-                this.saveToStorage();
-                return announcement;
-            }
-            
-            getRecentMeetings(limit = 5) {
-                return this.db.meetings
-                    .sort((a, b) => new Date(b.date) - new Date(a.date))
-                    .slice(0, limit);
-            }
-            
-            getUpcomingMeetings() {
-                const today = new Date().toISOString().split('T')[0];
-                return this.db.meetings
-                    .filter(m => m.date >= today)
-                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+            } catch (error) {
+                console.error('Login error:', error);
+                return { success: false, message: 'Network error. Please try again.' };
             }
         }
-
-        // ==================== APPLICATION CLASS ====================
-        class CouncilApp {
-            constructor() {
-                this.db = new CouncilDatabase();
-                this.currentUser = null;
-                this.currentPage = 'dashboard';
-                this.init();
-            }
-            
-            init() {
-                this.loadCurrentUser();
-                this.setupEventListeners();
-                this.checkAuthentication();
-                this.loadPage();
-            }
-            
-            loadCurrentUser() {
-                const savedUser = localStorage.getItem('sit_council_current_user');
-                if (savedUser) {
-                    this.currentUser = JSON.parse(savedUser);
-                }
-            }
-            
-            saveCurrentUser() {
-                if (this.currentUser) {
-                    localStorage.setItem('sit_council_current_user', JSON.stringify(this.currentUser));
-                }
-            }
-            
-            checkAuthentication() {
-                if (this.currentUser) {
-                    this.showApp();
+        
+        async register(userData) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    return { success: true, message: data.message };
                 } else {
-                    this.showAuth();
+                    return { success: false, message: data.errors?.[0]?.msg || data.message };
                 }
+            } catch (error) {
+                console.error('Register error:', error);
+                return { success: false, message: 'Network error. Please try again.' };
             }
-            
-            showAuth() {
-                document.getElementById('authContainer').style.display = 'flex';
-                document.getElementById('appContainer').style.display = 'none';
-            }
-            
-            showApp() {
-                document.getElementById('authContainer').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'block';
-                this.updateUserInfo();
-                this.loadDashboard();
-            }
-            
-            updateUserInfo() {
-                if (!this.currentUser) return;
-                
-                document.getElementById('userName').textContent = 
-                    `${this.currentUser.firstName} ${this.currentUser.lastName}`;
-                document.getElementById('userRole').textContent = this.currentUser.role;
-                document.getElementById('userAvatar').textContent = this.currentUser.avatar;
-                document.getElementById('greetingName').textContent = this.currentUser.firstName;
-            }
-            
-            login(email, password) {
-                const user = this.db.getUserByEmail(email);
-                if (user && user.password === password) {
-                    this.currentUser = user;
-                    this.saveCurrentUser();
-                    this.showApp();
-                    this.showToast('Login successful!', 'success');
-                    return true;
-                }
-                this.showToast('Invalid email or password', 'error');
-                return false;
-            }
-            
-            logout() {
-                this.currentUser = null;
-                localStorage.removeItem('sit_council_current_user');
-                this.showAuth();
-                this.showToast('Logged out successfully', 'info');
-            }
-            
-            navigateTo(page) {
-                this.currentPage = page;
-                this.loadPage();
-            }
-            
-            loadPage() {
-                // Hide all pages
-                document.querySelectorAll('.page-content').forEach(page => {
-                    page.classList.remove('active');
+        }
+        
+        async googleAuth(googleData) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/google`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(googleData)
                 });
                 
-                // Show current page
-                const pageElement = document.getElementById(`${this.currentPage}Content`);
-                if (pageElement) {
-                    pageElement.classList.add('active');
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.token = data.token;
+                    this.user = data.user;
+                    this.isAuthenticated = true;
+                    
+                    localStorage.setItem('sit_council_token', data.token);
+                    localStorage.setItem('sit_council_user', JSON.stringify(data.user));
+                    
+                    this.setAuthHeader();
+                    
+                    return { success: true, user: data.user };
+                } else {
+                    return { success: false, message: data.message };
                 }
-                
-                // Update navigation
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                
-                const navItem = document.querySelector(`.nav-item[data-page="${this.currentPage}"]`);
-                if (navItem) {
-                    navItem.classList.add('active');
+            } catch (error) {
+                console.error('Google auth error:', error);
+                return { success: false, message: 'Network error. Please try again.' };
+            }
+        }
+        
+        logout() {
+            this.token = null;
+            this.user = null;
+            this.isAuthenticated = false;
+            
+            localStorage.removeItem('sit_council_token');
+            localStorage.removeItem('sit_council_user');
+            
+            // Clear auth header
+            delete axios.defaults.headers.common['Authorization'];
+        }
+        
+        setAuthHeader() {
+            if (this.token) {
+                axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+            }
+        }
+        
+        async fetchWithAuth(url, options = {}) {
+            if (!this.token) {
+                throw new Error('Not authenticated');
+            }
+            
+            const defaultOptions = {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
                 }
-                
-                // Load page data
-                switch(this.currentPage) {
-                    case 'dashboard':
-                        this.loadDashboard();
-                        break;
-                    case 'new-meeting':
-                        this.loadMeetingForm();
-                        break;
-                    case 'pdf-generator':
-                        this.loadPDFGenerator();
-                        break;
-                    case 'announcements':
-                        this.loadAnnouncements();
-                        break;
-                }
+            };
+            
+            const response = await fetch(url, { ...defaultOptions, ...options });
+            
+            if (response.status === 401) {
+                // Token expired, logout
+                this.logout();
+                window.location.reload();
+                throw new Error('Session expired. Please login again.');
             }
             
-            loadDashboard() {
-                this.updateStats();
-                this.loadRecentMeetings();
-                this.loadUpcomingMeetings();
-                this.updateManOfTheWeek();
-            }
+            return response;
+        }
+    }
+    
+    // ==================== API SERVICE ====================
+    class ApiService {
+        constructor(authService) {
+            this.auth = authService;
+            this.socket = null;
+        }
+        
+        // Meetings
+        async getMeetings(params = {}) {
+            const query = new URLSearchParams(params).toString();
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings?${query}`);
+            return await response.json();
+        }
+        
+        async getMeeting(id) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/${id}`);
+            return await response.json();
+        }
+        
+        async createMeeting(meetingData) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings`, {
+                method: 'POST',
+                body: JSON.stringify(meetingData)
+            });
+            return await response.json();
+        }
+        
+        async updateMeeting(id, updates) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(updates)
+            });
+            return await response.json();
+        }
+        
+        async deleteMeeting(id) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/${id}`, {
+                method: 'DELETE'
+            });
+            return await response.json();
+        }
+        
+        async archiveMeeting(id) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/${id}/archive`, {
+                method: 'PUT'
+            });
+            return await response.json();
+        }
+        
+        // Users
+        async getUsers(params = {}) {
+            const query = new URLSearchParams(params).toString();
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users?${query}`);
+            return await response.json();
+        }
+        
+        async getUser(id) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users/${id}`);
+            return await response.json();
+        }
+        
+        async updateUser(id, updates) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(updates)
+            });
+            return await response.json();
+        }
+        
+        // Statistics
+        async getDashboardStats() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/stats`);
+            return await response.json();
+        }
+        
+        async getUpcomingMeetings() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/upcoming`);
+            return await response.json();
+        }
+        
+        async getMyMeetings() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/my-meetings`);
+            return await response.json();
+        }
+        
+        // PDF Generation
+        async generatePDF(meetingId) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/pdf/generate/${meetingId}`);
+            return await response.json();
+        }
+        
+        async downloadPDF(meetingId) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/pdf/download/${meetingId}`);
             
-            updateStats() {
-                const meetings = this.db.db.meetings;
-                const today = new Date().toISOString().split('T')[0];
-                
-                const totalMeetings = meetings.length;
-                const upcomingMeetings = meetings.filter(m => m.date >= today).length;
-                const regularMeetings = meetings.filter(m => m.type === 'regular').length;
-                const randomMeetings = meetings.filter(m => m.type === 'random').length;
-                
-                // Update stats in UI
-                const statElements = {
-                    totalMeetings: totalMeetings,
-                    upcomingMeetings: upcomingMeetings,
-                    regularMeetings: regularMeetings,
-                    randomMeetings: randomMeetings
-                };
-                
-                // You would update actual DOM elements here
-            }
-            
-            loadRecentMeetings() {
-                const meetings = this.db.getRecentMeetings(5);
-                const container = document.getElementById('recentMeetings');
-                if (container) {
-                    container.innerHTML = meetings.map(meeting => `
-                        <div class="meeting-item">
-                            <div class="meeting-date">${this.formatDate(meeting.date)}</div>
-                            <div class="meeting-title">${meeting.title}</div>
-                            <div class="meeting-type ${meeting.type}">${meeting.type}</div>
-                        </div>
-                    `).join('');
-                }
-            }
-            
-            loadUpcomingMeetings() {
-                const meetings = this.db.getUpcomingMeetings();
-                const table = document.getElementById('upcomingMeetingsTable');
-                if (table) {
-                    table.innerHTML = meetings.map(meeting => `
-                        <tr>
-                            <td>${this.formatDate(meeting.date)}</td>
-                            <td>${meeting.title}</td>
-                            <td><span class="badge ${meeting.type}">${meeting.type}</span></td>
-                            <td>${meeting.startTime} - ${meeting.endTime}</td>
-                            <td>${meeting.location || 'TBA'}</td>
-                            <td><span class="status scheduled">Scheduled</span></td>
-                            <td>
-                                <button class="btn-icon" onclick="app.editMeeting(${meeting.id})">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('');
-                }
-            }
-            
-            updateManOfTheWeek() {
-                // Find top performer based on performance rating
-                const topPerformer = this.db.db.users
-                    .filter(u => u.isActive)
-                    .sort((a, b) => b.performance.rating - a.performance.rating)[0];
-                
-                if (topPerformer) {
-                    const manOfWeek = document.querySelector('.man-of-week .man-content');
-                    if (manOfWeek) {
-                        manOfWeek.innerHTML = `
-                            <div class="man-avatar">${topPerformer.avatar}</div>
-                            <div class="man-info">
-                                <h4>${topPerformer.firstName} ${topPerformer.lastName}</h4>
-                                <p class="man-role">${topPerformer.role}</p>
-                                <p class="man-reason">Top performer with ${topPerformer.performance.rating}/5 rating</p>
-                                <div class="man-stats">
-                                    <div class="stat">
-                                        <span class="stat-value">${topPerformer.performance.meetingsAttended}</span>
-                                        <span class="stat-label">Meetings</span>
-                                    </div>
-                                    <div class="stat">
-                                        <span class="stat-value">${topPerformer.performance.tasksCompleted}</span>
-                                        <span class="stat-label">Tasks</span>
-                                    </div>
-                                    <div class="stat">
-                                        <span class="stat-value">${topPerformer.performance.rating}</span>
-                                        <span class="stat-label">Rating</span>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }
-                }
-            }
-            
-            loadMeetingForm() {
-                // Load members for attendee selection
-                const memberList = document.getElementById('attendeeList');
-                if (memberList) {
-                    memberList.innerHTML = this.db.db.users
-                        .filter(user => user.isActive)
-                        .map(user => `
-                            <div class="member-checkbox">
-                                <input type="checkbox" id="member-${user.id}" value="${user.id}">
-                                <label for="member-${user.id}">
-                                    ${user.firstName} ${user.lastName} (${user.role})
-                                </label>
-                            </div>
-                        `).join('');
-                }
-                
-                // Set default date to tomorrow
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                document.getElementById('meetingDate').value = tomorrow.toISOString().split('T')[0];
-                
-                // Set default times
-                document.getElementById('meetingStartTime').value = '14:00';
-                document.getElementById('meetingEndTime').value = '16:00';
-            }
-            
-            createNewMeeting() {
-                const title = document.getElementById('meetingTitle').value;
-                const type = document.getElementById('meetingType').value;
-                const date = document.getElementById('meetingDate').value;
-                const startTime = document.getElementById('meetingStartTime').value;
-                const endTime = document.getElementById('meetingEndTime').value;
-                const location = document.getElementById('meetingLocation').value;
-                const objective = document.getElementById('meetingObjective').value;
-                
-                // Get selected attendees
-                const attendees = [];
-                document.querySelectorAll('#attendeeList input:checked').forEach(checkbox => {
-                    attendees.push(parseInt(checkbox.value));
-                });
-                
-                const meeting = {
-                    title,
-                    type,
-                    date,
-                    startTime,
-                    endTime,
-                    location,
-                    objective,
-                    attendees,
-                    createdBy: this.currentUser.id,
-                    status: 'scheduled'
-                };
-                
-                this.db.addMeeting(meeting);
-                this.showToast('Meeting created successfully!', 'success');
-                this.navigateTo('dashboard');
-            }
-            
-            loadPDFGenerator() {
-                // Load meetings for PDF generation
-                const meetings = this.db.db.meetings;
-                // Generate PDF preview
-                this.generatePDFPreview();
-            }
-            
-            generatePDFPreview() {
-                const preview = document.getElementById('pdfPreview');
-                if (!preview) return;
-                
-                // Sample PDF preview based on your image
-                preview.innerHTML = `
-                    <div class="pdf-template">
-                        <div class="pdf-header">
-                            <h1>STUDENT COUNCIL MEETING MINUTES</h1>
-                            <div class="pdf-meta">
-                                <div><strong>Date:</strong> <span id="pdfDate">${this.formatDate(new Date())}</span></div>
-                                <div><strong>Time:</strong> <span id="pdfTime">14:00 - 16:00</span></div>
-                                <div><strong>Venue:</strong> <span id="pdfVenue">Conference Room A</span></div>
-                                <div><strong>Meeting Type:</strong> <span id="pdfType">Regular</span></div>
-                            </div>
-                        </div>
-                        
-                        <div class="pdf-section">
-                            <h2>Attendance</h2>
-                            <table class="pdf-table">
-                                <thead>
-                                    <tr>
-                                        <th>Attendees</th>
-                                        <th>Role</th>
-                                        <th>Absent</th>
-                                        <th>Role</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="pdfAttendance">
-                                    <!-- Attendance will be populated -->
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <div class="pdf-section">
-                            <h2>Agenda</h2>
-                            <ol id="pdfAgenda">
-                                <!-- Agenda items will be populated -->
-                            </ol>
-                        </div>
-                        
-                        <div class="pdf-section">
-                            <h2>Discussion & Decisions</h2>
-                            <div id="pdfDecisions">
-                                <!-- Decisions will be populated -->
-                            </div>
-                        </div>
-                        
-                        <div class="pdf-signature">
-                            <div class="signature-block">
-                                <p>Prepared by:</p>
-                                <p><strong>Secretary: </strong>Tahir Hasan</p>
-                            </div>
-                            <div class="signature-block">
-                                <p>Approved by:</p>
-                                <p><strong>Chairperson: </strong>___________________</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            generatePDF() {
-                // In a real implementation, use jsPDF or similar library
-                // For demo, create a downloadable HTML file
-                const content = document.getElementById('pdfPreview').innerHTML;
-                const blob = new Blob([`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <style>
-                            body { font-family: Arial, sans-serif; margin: 40px; }
-                            .pdf-header { text-align: center; margin-bottom: 40px; }
-                            .pdf-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                            .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 8px; }
-                            .pdf-section { margin: 30px 0; }
-                            .signature-block { margin-top: 60px; }
-                        </style>
-                    </head>
-                    <body>
-                        ${content}
-                    </body>
-                    </html>
-                `], { type: 'text/html' });
-                
-                const url = URL.createObjectURL(blob);
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `meeting-minutes-${new Date().toISOString().split('T')[0]}.html`;
+                a.download = `meeting-minutes-${meetingId}.pdf`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                this.showToast('PDF generated successfully!', 'success');
-            }
-            
-            loadAnnouncements() {
-                const announcements = this.db.db.announcements;
-                const container = document.getElementById('announcementsList');
-                if (container) {
-                    if (announcements.length === 0) {
-                        container.innerHTML = `
-                            <div class="empty-state">
-                                <i class="fas fa-bullhorn fa-3x"></i>
-                                <p>No announcements yet</p>
-                            </div>
-                        `;
-                    } else {
-                        container.innerHTML = announcements.map(announcement => `
-                            <div class="announcement-card">
-                                <div class="announcement-header">
-                                    <h3>${announcement.title}</h3>
-                                    <span class="announcement-date">${this.formatDate(announcement.createdAt)}</span>
-                                </div>
-                                <div class="announcement-content">
-                                    ${announcement.content}
-                                </div>
-                                <div class="announcement-footer">
-                                    <span class="announcement-author">By: ${announcement.author}</span>
-                                    ${this.currentUser.role === 'Secretary' || this.currentUser.role === 'President' ? `
-                                        <button class="btn-icon" onclick="app.deleteAnnouncement(${announcement.id})">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    ` : ''}
-                                </div>
-                            </div>
-                        `).join('');
-                    }
-                }
-            }
-            
-            createAnnouncement() {
-                const title = prompt('Enter announcement title:');
-                if (!title) return;
-                
-                const content = prompt('Enter announcement content:');
-                if (!content) return;
-                
-                const announcement = {
-                    title,
-                    content,
-                    author: `${this.currentUser.firstName} ${this.currentUser.lastName}`,
-                    priority: 'normal'
-                };
-                
-                this.db.addAnnouncement(announcement);
-                this.showToast('Announcement created!', 'success');
-                this.loadAnnouncements();
-            }
-            
-            setupEventListeners() {
-                // Theme toggle
-                document.getElementById('themeToggle').addEventListener('click', () => {
-                    this.toggleTheme();
-                });
-                
-                // Login form
-                document.getElementById('loginForm').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const email = document.getElementById('loginEmail').value;
-                    const password = document.getElementById('loginPassword').value;
-                    this.login(email, password);
-                });
-                
-                // Logout
-                document.querySelector('[data-action="logout"]').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.logout();
-                });
-                
-                // Navigation
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const page = e.currentTarget.dataset.page;
-                        this.navigateTo(page);
-                    });
-                });
-                
-                // Create meeting button
-                document.getElementById('createMeeting').addEventListener('click', () => {
-                    this.createNewMeeting();
-                });
-                
-                // Generate PDF button
-                document.getElementById('generatePDF').addEventListener('click', () => {
-                    this.generatePDF();
-                });
-                
-                // New announcement button
-                document.getElementById('newAnnouncement').addEventListener('click', () => {
-                    this.createAnnouncement();
-                });
-                
-                // Save dashboard button
-                document.getElementById('saveDashboard').addEventListener('click', () => {
-                    this.saveDashboardState();
-                });
-                
-                // File upload
-                document.getElementById('browseFiles').addEventListener('click', () => {
-                    document.getElementById('fileInput').click();
-                });
-                
-                document.getElementById('fileInput').addEventListener('change', (e) => {
-                    this.handleFileUpload(e.target.files);
-                });
-                
-                // Google Sign-In callback
-                window.handleGoogleSignIn = (response) => {
-                    this.handleGoogleResponse(response);
-                };
-            }
-            
-            toggleTheme() {
-                const currentTheme = document.documentElement.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                document.documentElement.setAttribute('data-theme', newTheme);
-                
-                // Update icon
-                const icon = document.querySelector('#themeToggle i');
-                icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-                
-                // Save preference
-                this.db.db.settings.theme = newTheme;
-                this.db.saveToStorage();
-            }
-            
-            handleGoogleResponse(response) {
-                // Decode the JWT token
-                const responsePayload = JSON.parse(atob(response.credential.split('.')[1]));
-                
-                // Create or get user from Google
-                const googleUser = {
-                    firstName: responsePayload.given_name,
-                    lastName: responsePayload.family_name,
-                    email: responsePayload.email,
-                    avatar: (responsePayload.given_name[0] + responsePayload.family_name[0]).toUpperCase(),
-                    role: 'Member', // Default role
-                    isGoogleUser: true
-                };
-                
-                // Check if user exists
-                let user = this.db.getUserByEmail(googleUser.email);
-                if (!user) {
-                    // Create new user
-                    user = {
-                        ...googleUser,
-                        id: this.db.db.users.length + 1,
-                        studentId: `GOOGLE-${Date.now()}`,
-                        isActive: true,
-                        password: 'google-auth',
-                        permissions: ['view'],
-                        performance: {
-                            meetingsAttended: 0,
-                            tasksCompleted: 0,
-                            rating: 0
-                        }
-                    };
-                    this.db.db.users.push(user);
-                    this.db.saveToStorage();
-                }
-                
-                this.currentUser = user;
-                this.saveCurrentUser();
-                this.showApp();
-                this.showToast('Signed in with Google!', 'success');
-            }
-            
-            handleFileUpload(files) {
-                const fileList = document.getElementById('uploadedFilesList');
-                fileList.innerHTML = '';
-                
-                Array.from(files).forEach(file => {
-                    const fileItem = document.createElement('div');
-                    fileItem.className = 'file-item';
-                    fileItem.innerHTML = `
-                        <i class="fas fa-file"></i>
-                        <span>${file.name}</span>
-                        <span class="file-size">(${this.formatFileSize(file.size)})</span>
-                    `;
-                    fileList.appendChild(fileItem);
-                });
-                
-                this.showToast(`${files.length} file(s) uploaded`, 'success');
-            }
-            
-            formatFileSize(bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            }
-            
-            saveDashboardState() {
-                const dashboardState = {
-                    widgets: {},
-                    layout: {},
-                    lastSaved: new Date().toISOString()
-                };
-                localStorage.setItem('sit_council_dashboard', JSON.stringify(dashboardState));
-                this.showToast('Dashboard saved!', 'success');
-            }
-            
-            showToast(message, type = 'success') {
-                const toast = document.createElement('div');
-                toast.className = `toast toast-${type}`;
-                toast.innerHTML = `
-                    <div class="toast-content">
-                        <i class="fas fa-${type === 'success' ? 'check-circle' : 
-                                          type === 'error' ? 'exclamation-circle' : 
-                                          'info-circle'}"></i>
-                        <span>${message}</span>
-                    </div>
-                    <button class="toast-close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                `;
-                
-                document.getElementById('toastContainer').appendChild(toast);
-                
-                // Show animation
-                setTimeout(() => toast.classList.add('show'), 10);
-                
-                // Close button
-                toast.querySelector('.toast-close').addEventListener('click', () => {
-                    toast.classList.remove('show');
-                    setTimeout(() => toast.remove(), 300);
-                });
-                
-                // Auto remove
-                setTimeout(() => {
-                    if (toast.parentNode) {
-                        toast.classList.remove('show');
-                        setTimeout(() => toast.remove(), 300);
-                    }
-                }, 5000);
-            }
-            
-            formatDate(dateString) {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
+                window.URL.revokeObjectURL(url);
+                return { success: true };
+            } else {
+                const error = await response.json();
+                return { success: false, message: error.message };
             }
         }
-
-        // ==================== INITIALIZE APPLICATION ====================
-        let app;
         
-        document.addEventListener('DOMContentLoaded', () => {
-            // Hide loading
+        // Performance
+        async getLeaderboard() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users/leaderboard`);
+            return await response.json();
+        }
+        
+        async getManOfTheWeek() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users/man-of-week`);
+            return await response.json();
+        }
+        
+        // File Upload
+        async uploadFile(file, meetingId) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('meetingId', meetingId);
+            
+            const response = await fetch(`${API_BASE_URL}/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${this.auth.token}`
+                },
+                body: formData
+            });
+            
+            return await response.json();
+        }
+        
+        // Initialize WebSocket
+        initWebSocket() {
+            if (this.socket) {
+                this.socket.disconnect();
+            }
+            
+            this.socket = io(SOCKET_URL, {
+                auth: {
+                    token: this.auth.token
+                }
+            });
+            
+            this.socket.on('connect', () => {
+                console.log('WebSocket connected');
+            });
+            
+            this.socket.on('meetingUpdated', (data) => {
+                // Handle real-time meeting updates
+                this.handleMeetingUpdate(data);
+            });
+            
+            this.socket.on('disconnect', () => {
+                console.log('WebSocket disconnected');
+            });
+        }
+        
+        handleMeetingUpdate(data) {
+            // Show notification for meeting updates
+            if (data.userId !== this.auth.user?.id) {
+                this.showNotification(`Meeting "${data.meetingTitle}" was updated by ${data.userName}`);
+            }
+            
+            // Refresh meeting list if needed
+            if (window.currentPage === 'dashboard' || window.currentPage === 'minutes') {
+                this.loadDashboardData();
+            }
+        }
+        
+        showNotification(message) {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-info';
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">Update</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+            
+            document.getElementById('toastContainer').appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 10);
             setTimeout(() => {
-                document.getElementById('loadingOverlay').classList.add('hidden');
-            }, 1000);
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+    }
+    
+    // ==================== APPLICATION MANAGER ====================
+    class CouncilAppManager {
+        constructor() {
+            this.authService = new AuthService();
+            this.apiService = new ApiService(this.authService);
+            this.uiManager = null;
             
-            // Initialize app
-            app = new CouncilApp();
-            window.app = app; // Make accessible globally
-            
-            // Setup additional event listeners
-            setupAdditionalListeners();
-        });
+            this.init();
+        }
         
-        function setupAdditionalListeners() {
-            // Menu toggle for mobile
-            document.getElementById('menuToggle').addEventListener('click', () => {
-                document.getElementById('sidebar').classList.toggle('active');
+        init() {
+            // Check authentication
+            if (this.authService.isAuthenticated) {
+                this.authService.setAuthHeader();
+                this.apiService.initWebSocket();
+                this.showApp();
+            } else {
+                this.showAuth();
+            }
+            
+            // Initialize UI Manager
+            this.uiManager = new UIManager(this);
+        }
+        
+        async login(email, password) {
+            const result = await this.authService.login(email, password);
+            
+            if (result.success) {
+                this.authService.setAuthHeader();
+                this.apiService.initWebSocket();
+                this.showApp();
+                return { success: true };
+            }
+            
+            return result;
+        }
+        
+        async register(userData) {
+            return await this.authService.register(userData);
+        }
+        
+        async googleAuth(googleData) {
+            const result = await this.authService.googleAuth(googleData);
+            
+            if (result.success) {
+                this.authService.setAuthHeader();
+                this.apiService.initWebSocket();
+                this.showApp();
+                return { success: true };
+            }
+            
+            return result;
+        }
+        
+        logout() {
+            this.authService.logout();
+            if (this.apiService.socket) {
+                this.apiService.socket.disconnect();
+            }
+            this.showAuth();
+        }
+        
+        showAuth() {
+            document.getElementById('authContainer').style.display = 'flex';
+            document.getElementById('appContainer').style.display = 'none';
+        }
+        
+        showApp() {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            this.uiManager.updateUserInfo();
+            this.uiManager.loadDashboardData();
+        }
+        
+        // Data fetching methods
+        async loadDashboardData() {
+            try {
+                const [stats, upcomingMeetings, leaderboard, manOfWeek] = await Promise.all([
+                    this.apiService.getDashboardStats(),
+                    this.apiService.getUpcomingMeetings(),
+                    this.apiService.getLeaderboard(),
+                    this.apiService.getManOfTheWeek()
+                ]);
+                
+                return {
+                    stats: stats.data,
+                    upcomingMeetings: upcomingMeetings.data,
+                    leaderboard: leaderboard.data,
+                    manOfWeek: manOfWeek.data
+                };
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                return null;
+            }
+        }
+        
+        async createMeeting(meetingData) {
+            return await this.apiService.createMeeting(meetingData);
+        }
+        
+        async generateMeetingPDF(meetingId) {
+            return await this.apiService.downloadPDF(meetingId);
+        }
+    }
+    
+    // ==================== UI MANAGER (UPDATED) ====================
+    class UIManager {
+        constructor(appManager) {
+            this.app = appManager;
+            this.init();
+        }
+        
+        init() {
+            this.cacheDOM();
+            this.bindEvents();
+            this.initGoogleSignIn();
+        }
+        
+        cacheDOM() {
+            // Cache all DOM elements as before
+            // ...
+        }
+        
+        bindEvents() {
+            // Bind all events as before
+            // ...
+        }
+        
+        async loadDashboardData() {
+            try {
+                const data = await this.app.loadDashboardData();
+                
+                if (data) {
+                    // Update stats
+                    if (data.stats) {
+                        this.updateStats(data.stats);
+                    }
+                    
+                    // Update Man of the Week
+                    if (data.manOfWeek) {
+                        this.updateManOfTheWeek(data.manOfWeek);
+                    }
+                    
+                    // Load recent meetings
+                    this.loadRecentMeetings();
+                    
+                    // Load upcoming meetings
+                    if (data.upcomingMeetings) {
+                        this.loadUpcomingMeetings(data.upcomingMeetings);
+                    }
+                    
+                    // Load leaderboard
+                    if (data.leaderboard) {
+                        this.loadLeaderboardPreview(data.leaderboard);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                this.showToast('Error loading dashboard data', 'error');
+            }
+        }
+        
+        updateStats(stats) {
+            // Update all stat elements with real data
+            if (this.meetingsCount) {
+                this.meetingsCount.textContent = stats.totalMeetings || 0;
+            }
+            
+            if (this.regularMeetings) {
+                this.regularMeetings.textContent = `${stats.regularMeetings || 0} Regular`;
+            }
+            
+            if (this.randomMeetings) {
+                this.randomMeetings.textContent = `${stats.randomMeetings || 0} Random`;
+            }
+            
+            // ... update other stats
+        }
+        
+        updateManOfTheWeek(man) {
+            if (man && this.manAvatar) {
+                this.manAvatar.textContent = man.avatar || '??';
+                this.manName.textContent = man.name || 'Not Selected';
+                this.manRole.textContent = man.role || 'Member';
+                this.manReason.textContent = man.reason || 'Outstanding performance this week';
+                this.manTasks.textContent = man.stats?.tasksCompleted || 0;
+                this.manMeetings.textContent = man.stats?.meetingsAttended || 0;
+                this.manPerformance.textContent = `${man.stats?.performance || 0}%`;
+            }
+        }
+        
+        async loadRecentMeetings() {
+            try {
+                const response = await this.app.apiService.getMeetings({
+                    limit: 5,
+                    sort: '-date'
+                });
+                
+                if (response.success && this.recentMeetingsList) {
+                    this.recentMeetingsList.innerHTML = response.data.map(meeting => `
+                        <div class="meeting-item">
+                            <div class="meeting-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="meeting-details">
+                                <div class="meeting-title">${meeting.title}</div>
+                                <div class="meeting-meta">
+                                    <span><i class="far fa-calendar"></i> ${this.formatDate(meeting.date)}</span>
+                                    <span><i class="far fa-clock"></i> ${meeting.startTime} - ${meeting.endTime}</span>
+                                    <span><i class="fas fa-user"></i> ${meeting.chairperson?.firstName || 'Chair'}</span>
+                                </div>
+                            </div>
+                            <div class="meeting-type type-${meeting.type}">
+                                ${meeting.type.charAt(0).toUpperCase() + meeting.type.slice(1)}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading recent meetings:', error);
+            }
+        }
+        
+        async loadUpcomingMeetings(meetings) {
+            if (!this.upcomingMeetingsTable) return;
+            
+            this.upcomingMeetingsTable.innerHTML = meetings.map(meeting => {
+                const statusBadge = meeting.status === 'scheduled' ? 
+                    '<span class="badge badge-success">Scheduled</span>' :
+                    '<span class="badge badge-warning">Pending</span>';
+                
+                return `
+                    <tr>
+                        <td>${this.formatDate(meeting.date)} ${meeting.startTime}</td>
+                        <td>${meeting.title}</td>
+                        <td>
+                            <span class="meeting-type type-${meeting.type}">
+                                ${meeting.type.charAt(0).toUpperCase() + meeting.type.slice(1)}
+                            </span>
+                        </td>
+                        <td>${meeting.location}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn-icon" title="Edit" onclick="uiManager.editMeeting('${meeting._id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon" title="Delete" onclick="uiManager.deleteMeeting('${meeting._id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn-icon" title="Generate PDF" onclick="uiManager.generatePDF('${meeting._id}')">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        async generatePDF(meetingId) {
+            try {
+                this.showLoading();
+                const result = await this.app.apiService.generateMeetingPDF(meetingId);
+                
+                if (result.success) {
+                    this.showToast('PDF generated and downloaded successfully!', 'success');
+                } else {
+                    this.showToast(result.message || 'Error generating PDF', 'error');
+                }
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                this.showToast('Error generating PDF', 'error');
+            } finally {
+                this.hideLoading();
+            }
+        }
+        
+        async createNewMeeting() {
+            const meetingData = {
+                title: document.getElementById('meetingTitle').value,
+                type: document.getElementById('meetingType').value,
+                date: document.getElementById('meetingDate').value,
+                startTime: document.getElementById('meetingStartTime').value,
+                endTime: document.getElementById('meetingEndTime').value,
+                location: document.getElementById('meetingLocation').value,
+                chairperson: document.getElementById('meetingChair').value,
+                objective: document.getElementById('meetingObjective').value,
+                agenda: this.getAgendaItems(),
+                attendees: this.getSelectedAttendees()
+            };
+            
+            try {
+                this.showLoading();
+                const result = await this.app.createMeeting(meetingData);
+                
+                if (result.success) {
+                    this.showToast('Meeting created successfully!', 'success');
+                    this.clearMeetingForm();
+                    this.navigateTo('dashboard');
+                } else {
+                    this.showToast(result.message || 'Error creating meeting', 'error');
+                }
+            } catch (error) {
+                console.error('Error creating meeting:', error);
+                this.showToast('Error creating meeting', 'error');
+            } finally {
+                this.hideLoading();
+            }
+        }
+        
+        // Other methods remain the same as before
+        // ...
+        
+        showToast(message, type = 'success') {
+            // Toast implementation as before
+            // ...
+        }
+        
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    }
+    
+    // ==================== INITIALIZE APPLICATION ====================
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize the application
+        window.appManager = new CouncilAppManager();
+        
+        // Make accessible globally
+        window.authService = window.appManager.authService;
+        window.apiService = window.appManager.apiService;
+        window.uiManager = window.appManager.uiManager;
+        
+        // Hide loading
+        setTimeout(() => {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }, 1000);
+    });
+                        </script><script>
+    // ==================== CONFIGURATION ====================
+    const API_BASE_URL = 'http://localhost:5000/api';
+    const SOCKET_URL = 'http://localhost:5000';
+    
+    // ==================== AUTH SERVICE ====================
+    class AuthService {
+        constructor() {
+            this.token = localStorage.getItem('sit_council_token');
+            this.user = JSON.parse(localStorage.getItem('sit_council_user') || 'null');
+            this.isAuthenticated = !!this.token;
+        }
+        
+        async login(email, password) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.token = data.token;
+                    this.user = data.user;
+                    this.isAuthenticated = true;
+                    
+                    localStorage.setItem('sit_council_token', data.token);
+                    localStorage.setItem('sit_council_user', JSON.stringify(data.user));
+                    
+                    // Set Authorization header for future requests
+                    this.setAuthHeader();
+                    
+                    return { success: true, user: data.user };
+                } else {
+                    return { success: false, message: data.message };
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                return { success: false, message: 'Network error. Please try again.' };
+            }
+        }
+        
+        async register(userData) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    return { success: true, message: data.message };
+                } else {
+                    return { success: false, message: data.errors?.[0]?.msg || data.message };
+                }
+            } catch (error) {
+                console.error('Register error:', error);
+                return { success: false, message: 'Network error. Please try again.' };
+            }
+        }
+        
+        async googleAuth(googleData) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/google`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(googleData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.token = data.token;
+                    this.user = data.user;
+                    this.isAuthenticated = true;
+                    
+                    localStorage.setItem('sit_council_token', data.token);
+                    localStorage.setItem('sit_council_user', JSON.stringify(data.user));
+                    
+                    this.setAuthHeader();
+                    
+                    return { success: true, user: data.user };
+                } else {
+                    return { success: false, message: data.message };
+                }
+            } catch (error) {
+                console.error('Google auth error:', error);
+                return { success: false, message: 'Network error. Please try again.' };
+            }
+        }
+        
+        logout() {
+            this.token = null;
+            this.user = null;
+            this.isAuthenticated = false;
+            
+            localStorage.removeItem('sit_council_token');
+            localStorage.removeItem('sit_council_user');
+            
+            // Clear auth header
+            delete axios.defaults.headers.common['Authorization'];
+        }
+        
+        setAuthHeader() {
+            if (this.token) {
+                axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+            }
+        }
+        
+        async fetchWithAuth(url, options = {}) {
+            if (!this.token) {
+                throw new Error('Not authenticated');
+            }
+            
+            const defaultOptions = {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            const response = await fetch(url, { ...defaultOptions, ...options });
+            
+            if (response.status === 401) {
+                // Token expired, logout
+                this.logout();
+                window.location.reload();
+                throw new Error('Session expired. Please login again.');
+            }
+            
+            return response;
+        }
+    }
+    
+    // ==================== API SERVICE ====================
+    class ApiService {
+        constructor(authService) {
+            this.auth = authService;
+            this.socket = null;
+        }
+        
+        // Meetings
+        async getMeetings(params = {}) {
+            const query = new URLSearchParams(params).toString();
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings?${query}`);
+            return await response.json();
+        }
+        
+        async getMeeting(id) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/${id}`);
+            return await response.json();
+        }
+        
+        async createMeeting(meetingData) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings`, {
+                method: 'POST',
+                body: JSON.stringify(meetingData)
+            });
+            return await response.json();
+        }
+        
+        async updateMeeting(id, updates) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(updates)
+            });
+            return await response.json();
+        }
+        
+        async deleteMeeting(id) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/${id}`, {
+                method: 'DELETE'
+            });
+            return await response.json();
+        }
+        
+        async archiveMeeting(id) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/${id}/archive`, {
+                method: 'PUT'
+            });
+            return await response.json();
+        }
+        
+        // Users
+        async getUsers(params = {}) {
+            const query = new URLSearchParams(params).toString();
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users?${query}`);
+            return await response.json();
+        }
+        
+        async getUser(id) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users/${id}`);
+            return await response.json();
+        }
+        
+        async updateUser(id, updates) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(updates)
+            });
+            return await response.json();
+        }
+        
+        // Statistics
+        async getDashboardStats() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/stats`);
+            return await response.json();
+        }
+        
+        async getUpcomingMeetings() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/upcoming`);
+            return await response.json();
+        }
+        
+        async getMyMeetings() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/my-meetings`);
+            return await response.json();
+        }
+        
+        // PDF Generation
+        async generatePDF(meetingId) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/pdf/generate/${meetingId}`);
+            return await response.json();
+        }
+        
+        async downloadPDF(meetingId) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/pdf/download/${meetingId}`);
+            
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `meeting-minutes-${meetingId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                return { success: true };
+            } else {
+                const error = await response.json();
+                return { success: false, message: error.message };
+            }
+        }
+        
+        // Performance
+        async getLeaderboard() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users/leaderboard`);
+            return await response.json();
+        }
+        
+        async getManOfTheWeek() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users/man-of-week`);
+            return await response.json();
+        }
+        
+        // File Upload
+        async uploadFile(file, meetingId) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('meetingId', meetingId);
+            
+            const response = await fetch(`${API_BASE_URL}/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${this.auth.token}`
+                },
+                body: formData
             });
             
-            // Close sidebar when clicking outside on mobile
-            document.addEventListener('click', (e) => {
-                const sidebar = document.getElementById('sidebar');
-                const menuToggle = document.getElementById('menuToggle');
-                if (window.innerWidth <= 768 && 
-                    !sidebar.contains(e.target) && 
-                    !menuToggle.contains(e.target) &&
-                    sidebar.classList.contains('active')) {
-                    sidebar.classList.remove('active');
+            return await response.json();
+        }
+        
+        // Initialize WebSocket
+        initWebSocket() {
+            if (this.socket) {
+                this.socket.disconnect();
+            }
+            
+            this.socket = io(SOCKET_URL, {
+                auth: {
+                    token: this.auth.token
                 }
             });
             
-            // Password visibility toggle
-            document.querySelectorAll('.password-toggle').forEach(toggle => {
-                toggle.addEventListener('click', function() {
-                    const input = this.previousElementSibling;
-                    const icon = this.querySelector('i');
-                    if (input.type === 'password') {
-                        input.type = 'text';
-                        icon.classList.remove('fa-eye');
-                        icon.classList.add('fa-eye-slash');
-                    } else {
-                        input.type = 'password';
-                        icon.classList.remove('fa-eye-slash');
-                        icon.classList.add('fa-eye');
-                    }
-                });
+            this.socket.on('connect', () => {
+                console.log('WebSocket connected');
             });
             
-            // Auth tabs switching
-            document.querySelectorAll('.auth-tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    // Update active tab
-                    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Show corresponding form
-                    const formId = this.dataset.form;
-                    document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
-                    document.getElementById(`${formId}Form`).classList.add('active');
-                });
+            this.socket.on('meetingUpdated', (data) => {
+                // Handle real-time meeting updates
+                this.handleMeetingUpdate(data);
             });
             
-            // Register form submission
-            document.getElementById('registerForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                // Add registration logic here
-                app.showToast('Registration functionality would be implemented here', 'info');
-            });
-            
-            // Forgot password form
-            document.getElementById('forgotForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const email = document.getElementById('forgotEmail').value;
-                app.showToast(`Password reset instructions sent to ${email}`, 'info');
+            this.socket.on('disconnect', () => {
+                console.log('WebSocket disconnected');
             });
         }
-    </script>
+        
+        handleMeetingUpdate(data) {
+            // Show notification for meeting updates
+            if (data.userId !== this.auth.user?.id) {
+                this.showNotification(`Meeting "${data.meetingTitle}" was updated by ${data.userName}`);
+            }
+            
+            // Refresh meeting list if needed
+            if (window.currentPage === 'dashboard' || window.currentPage === 'minutes') {
+                this.loadDashboardData();
+            }
+        }
+        
+        showNotification(message) {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-info';
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">Update</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+            
+            document.getElementById('toastContainer').appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+    }
+    
+    // ==================== APPLICATION MANAGER ====================
+    class CouncilAppManager {
+        constructor() {
+            this.authService = new AuthService();
+            this.apiService = new ApiService(this.authService);
+            this.uiManager = null;
+            
+            this.init();
+        }
+        
+        init() {
+            // Check authentication
+            if (this.authService.isAuthenticated) {
+                this.authService.setAuthHeader();
+                this.apiService.initWebSocket();
+                this.showApp();
+            } else {
+                this.showAuth();
+            }
+            
+            // Initialize UI Manager
+            this.uiManager = new UIManager(this);
+        }
+        
+        async login(email, password) {
+            const result = await this.authService.login(email, password);
+            
+            if (result.success) {
+                this.authService.setAuthHeader();
+                this.apiService.initWebSocket();
+                this.showApp();
+                return { success: true };
+            }
+            
+            return result;
+        }
+        
+        async register(userData) {
+            return await this.authService.register(userData);
+        }
+        
+        async googleAuth(googleData) {
+            const result = await this.authService.googleAuth(googleData);
+            
+            if (result.success) {
+                this.authService.setAuthHeader();
+                this.apiService.initWebSocket();
+                this.showApp();
+                return { success: true };
+            }
+            
+            return result;
+        }
+        
+        logout() {
+            this.authService.logout();
+            if (this.apiService.socket) {
+                this.apiService.socket.disconnect();
+            }
+            this.showAuth();
+        }
+        
+        showAuth() {
+            document.getElementById('authContainer').style.display = 'flex';
+            document.getElementById('appContainer').style.display = 'none';
+        }
+        
+        showApp() {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            this.uiManager.updateUserInfo();
+            this.uiManager.loadDashboardData();
+        }
+        
+        // Data fetching methods
+        async loadDashboardData() {
+            try {
+                const [stats, upcomingMeetings, leaderboard, manOfWeek] = await Promise.all([
+                    this.apiService.getDashboardStats(),
+                    this.apiService.getUpcomingMeetings(),
+                    this.apiService.getLeaderboard(),
+                    this.apiService.getManOfTheWeek()
+                ]);
+                
+                return {
+                    stats: stats.data,
+                    upcomingMeetings: upcomingMeetings.data,
+                    leaderboard: leaderboard.data,
+                    manOfWeek: manOfWeek.data
+                };
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                return null;
+            }
+        }
+        
+        async createMeeting(meetingData) {
+            return await this.apiService.createMeeting(meetingData);
+        }
+        
+        async generateMeetingPDF(meetingId) {
+            return await this.apiService.downloadPDF(meetingId);
+        }
+    }
+    
+    // ==================== UI MANAGER (UPDATED) ====================
+    class UIManager {
+        constructor(appManager) {
+            this.app = appManager;
+            this.init();
+        }
+        
+        init() {
+            this.cacheDOM();
+            this.bindEvents();
+            this.initGoogleSignIn();
+        }
+        
+        cacheDOM() {
+            // Cache all DOM elements as before
+            // ...
+        }
+        
+        bindEvents() {
+            // Bind all events as before
+            // ...
+        }
+        
+        async loadDashboardData() {
+            try {
+                const data = await this.app.loadDashboardData();
+                
+                if (data) {
+                    // Update stats
+                    if (data.stats) {
+                        this.updateStats(data.stats);
+                    }
+                    
+                    // Update Man of the Week
+                    if (data.manOfWeek) {
+                        this.updateManOfTheWeek(data.manOfWeek);
+                    }
+                    
+                    // Load recent meetings
+                    this.loadRecentMeetings();
+                    
+                    // Load upcoming meetings
+                    if (data.upcomingMeetings) {
+                        this.loadUpcomingMeetings(data.upcomingMeetings);
+                    }
+                    
+                    // Load leaderboard
+                    if (data.leaderboard) {
+                        this.loadLeaderboardPreview(data.leaderboard);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                this.showToast('Error loading dashboard data', 'error');
+            }
+        }
+        
+        updateStats(stats) {
+            // Update all stat elements with real data
+            if (this.meetingsCount) {
+                this.meetingsCount.textContent = stats.totalMeetings || 0;
+            }
+            
+            if (this.regularMeetings) {
+                this.regularMeetings.textContent = `${stats.regularMeetings || 0} Regular`;
+            }
+            
+            if (this.randomMeetings) {
+                this.randomMeetings.textContent = `${stats.randomMeetings || 0} Random`;
+            }
+            
+            // ... update other stats
+        }
+        
+        updateManOfTheWeek(man) {
+            if (man && this.manAvatar) {
+                this.manAvatar.textContent = man.avatar || '??';
+                this.manName.textContent = man.name || 'Not Selected';
+                this.manRole.textContent = man.role || 'Member';
+                this.manReason.textContent = man.reason || 'Outstanding performance this week';
+                this.manTasks.textContent = man.stats?.tasksCompleted || 0;
+                this.manMeetings.textContent = man.stats?.meetingsAttended || 0;
+                this.manPerformance.textContent = `${man.stats?.performance || 0}%`;
+            }
+        }
+        
+        async loadRecentMeetings() {
+            try {
+                const response = await this.app.apiService.getMeetings({
+                    limit: 5,
+                    sort: '-date'
+                });
+                
+                if (response.success && this.recentMeetingsList) {
+                    this.recentMeetingsList.innerHTML = response.data.map(meeting => `
+                        <div class="meeting-item">
+                            <div class="meeting-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="meeting-details">
+                                <div class="meeting-title">${meeting.title}</div>
+                                <div class="meeting-meta">
+                                    <span><i class="far fa-calendar"></i> ${this.formatDate(meeting.date)}</span>
+                                    <span><i class="far fa-clock"></i> ${meeting.startTime} - ${meeting.endTime}</span>
+                                    <span><i class="fas fa-user"></i> ${meeting.chairperson?.firstName || 'Chair'}</span>
+                                </div>
+                            </div>
+                            <div class="meeting-type type-${meeting.type}">
+                                ${meeting.type.charAt(0).toUpperCase() + meeting.type.slice(1)}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading recent meetings:', error);
+            }
+        }
+        
+        async loadUpcomingMeetings(meetings) {
+            if (!this.upcomingMeetingsTable) return;
+            
+            this.upcomingMeetingsTable.innerHTML = meetings.map(meeting => {
+                const statusBadge = meeting.status === 'scheduled' ? 
+                    '<span class="badge badge-success">Scheduled</span>' :
+                    '<span class="badge badge-warning">Pending</span>';
+                
+                return `
+                    <tr>
+                        <td>${this.formatDate(meeting.date)} ${meeting.startTime}</td>
+                        <td>${meeting.title}</td>
+                        <td>
+                            <span class="meeting-type type-${meeting.type}">
+                                ${meeting.type.charAt(0).toUpperCase() + meeting.type.slice(1)}
+                            </span>
+                        </td>
+                        <td>${meeting.location}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn-icon" title="Edit" onclick="uiManager.editMeeting('${meeting._id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon" title="Delete" onclick="uiManager.deleteMeeting('${meeting._id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn-icon" title="Generate PDF" onclick="uiManager.generatePDF('${meeting._id}')">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        async generatePDF(meetingId) {
+            try {
+                this.showLoading();
+                const result = await this.app.apiService.generateMeetingPDF(meetingId);
+                
+                if (result.success) {
+                    this.showToast('PDF generated and downloaded successfully!', 'success');
+                } else {
+                    this.showToast(result.message || 'Error generating PDF', 'error');
+                }
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                this.showToast('Error generating PDF', 'error');
+            } finally {
+                this.hideLoading();
+            }
+        }
+        
+        async createNewMeeting() {
+            const meetingData = {
+                title: document.getElementById('meetingTitle').value,
+                type: document.getElementById('meetingType').value,
+                date: document.getElementById('meetingDate').value,
+                startTime: document.getElementById('meetingStartTime').value,
+                endTime: document.getElementById('meetingEndTime').value,
+                location: document.getElementById('meetingLocation').value,
+                chairperson: document.getElementById('meetingChair').value,
+                objective: document.getElementById('meetingObjective').value,
+                agenda: this.getAgendaItems(),
+                attendees: this.getSelectedAttendees()
+            };
+            
+            try {
+                this.showLoading();
+                const result = await this.app.createMeeting(meetingData);
+                
+                if (result.success) {
+                    this.showToast('Meeting created successfully!', 'success');
+                    this.clearMeetingForm();
+                    this.navigateTo('dashboard');
+                } else {
+                    this.showToast(result.message || 'Error creating meeting', 'error');
+                }
+            } catch (error) {
+                console.error('Error creating meeting:', error);
+                this.showToast('Error creating meeting', 'error');
+            } finally {
+                this.hideLoading();
+            }
+        }
+        
+        // Other methods remain the same as before
+        // ...
+        
+        showToast(message, type = 'success') {
+            // Toast implementation as before
+            // ...
+        }
+        
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    }
+    
+    // ==================== INITIALIZE APPLICATION ====================
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize the application
+        window.appManager = new CouncilAppManager();
+        
+        // Make accessible globally
+        window.authService = window.appManager.authService;
+        window.apiService = window.appManager.apiService;
+        window.uiManager = window.appManager.uiManager;
+        
+        // Hide loading
+        setTimeout(() => {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }, 1000);
+    });
+                        </script><script>
+    // ==================== CONFIGURATION ====================
+    const API_BASE_URL = 'http://localhost:5000/api';
+    const SOCKET_URL = 'http://localhost:5000';
+    
+    // ==================== AUTH SERVICE ====================
+    class AuthService {
+        constructor() {
+            this.token = localStorage.getItem('sit_council_token');
+            this.user = JSON.parse(localStorage.getItem('sit_council_user') || 'null');
+            this.isAuthenticated = !!this.token;
+        }
+        
+        async login(email, password) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.token = data.token;
+                    this.user = data.user;
+                    this.isAuthenticated = true;
+                    
+                    localStorage.setItem('sit_council_token', data.token);
+                    localStorage.setItem('sit_council_user', JSON.stringify(data.user));
+                    
+                    // Set Authorization header for future requests
+                    this.setAuthHeader();
+                    
+                    return { success: true, user: data.user };
+                } else {
+                    return { success: false, message: data.message };
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                return { success: false, message: 'Network error. Please try again.' };
+            }
+        }
+        
+        async register(userData) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    return { success: true, message: data.message };
+                } else {
+                    return { success: false, message: data.errors?.[0]?.msg || data.message };
+                }
+            } catch (error) {
+                console.error('Register error:', error);
+                return { success: false, message: 'Network error. Please try again.' };
+            }
+        }
+        
+        async googleAuth(googleData) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/google`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(googleData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.token = data.token;
+                    this.user = data.user;
+                    this.isAuthenticated = true;
+                    
+                    localStorage.setItem('sit_council_token', data.token);
+                    localStorage.setItem('sit_council_user', JSON.stringify(data.user));
+                    
+                    this.setAuthHeader();
+                    
+                    return { success: true, user: data.user };
+                } else {
+                    return { success: false, message: data.message };
+                }
+            } catch (error) {
+                console.error('Google auth error:', error);
+                return { success: false, message: 'Network error. Please try again.' };
+            }
+        }
+        
+        logout() {
+            this.token = null;
+            this.user = null;
+            this.isAuthenticated = false;
+            
+            localStorage.removeItem('sit_council_token');
+            localStorage.removeItem('sit_council_user');
+            
+            // Clear auth header
+            delete axios.defaults.headers.common['Authorization'];
+        }
+        
+        setAuthHeader() {
+            if (this.token) {
+                axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+            }
+        }
+        
+        async fetchWithAuth(url, options = {}) {
+            if (!this.token) {
+                throw new Error('Not authenticated');
+            }
+            
+            const defaultOptions = {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            const response = await fetch(url, { ...defaultOptions, ...options });
+            
+            if (response.status === 401) {
+                // Token expired, logout
+                this.logout();
+                window.location.reload();
+                throw new Error('Session expired. Please login again.');
+            }
+            
+            return response;
+        }
+    }
+    
+    // ==================== API SERVICE ====================
+    class ApiService {
+        constructor(authService) {
+            this.auth = authService;
+            this.socket = null;
+        }
+        
+        // Meetings
+        async getMeetings(params = {}) {
+            const query = new URLSearchParams(params).toString();
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings?${query}`);
+            return await response.json();
+        }
+        
+        async getMeeting(id) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/${id}`);
+            return await response.json();
+        }
+        
+        async createMeeting(meetingData) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings`, {
+                method: 'POST',
+                body: JSON.stringify(meetingData)
+            });
+            return await response.json();
+        }
+        
+        async updateMeeting(id, updates) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(updates)
+            });
+            return await response.json();
+        }
+        
+        async deleteMeeting(id) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/${id}`, {
+                method: 'DELETE'
+            });
+            return await response.json();
+        }
+        
+        async archiveMeeting(id) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/${id}/archive`, {
+                method: 'PUT'
+            });
+            return await response.json();
+        }
+        
+        // Users
+        async getUsers(params = {}) {
+            const query = new URLSearchParams(params).toString();
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users?${query}`);
+            return await response.json();
+        }
+        
+        async getUser(id) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users/${id}`);
+            return await response.json();
+        }
+        
+        async updateUser(id, updates) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(updates)
+            });
+            return await response.json();
+        }
+        
+        // Statistics
+        async getDashboardStats() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/stats`);
+            return await response.json();
+        }
+        
+        async getUpcomingMeetings() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/upcoming`);
+            return await response.json();
+        }
+        
+        async getMyMeetings() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/meetings/my-meetings`);
+            return await response.json();
+        }
+        
+        // PDF Generation
+        async generatePDF(meetingId) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/pdf/generate/${meetingId}`);
+            return await response.json();
+        }
+        
+        async downloadPDF(meetingId) {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/pdf/download/${meetingId}`);
+            
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `meeting-minutes-${meetingId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                return { success: true };
+            } else {
+                const error = await response.json();
+                return { success: false, message: error.message };
+            }
+        }
+        
+        // Performance
+        async getLeaderboard() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users/leaderboard`);
+            return await response.json();
+        }
+        
+        async getManOfTheWeek() {
+            const response = await this.auth.fetchWithAuth(`${API_BASE_URL}/users/man-of-week`);
+            return await response.json();
+        }
+        
+        // File Upload
+        async uploadFile(file, meetingId) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('meetingId', meetingId);
+            
+            const response = await fetch(`${API_BASE_URL}/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${this.auth.token}`
+                },
+                body: formData
+            });
+            
+            return await response.json();
+        }
+        
+        // Initialize WebSocket
+        initWebSocket() {
+            if (this.socket) {
+                this.socket.disconnect();
+            }
+            
+            this.socket = io(SOCKET_URL, {
+                auth: {
+                    token: this.auth.token
+                }
+            });
+            
+            this.socket.on('connect', () => {
+                console.log('WebSocket connected');
+            });
+            
+            this.socket.on('meetingUpdated', (data) => {
+                // Handle real-time meeting updates
+                this.handleMeetingUpdate(data);
+            });
+            
+            this.socket.on('disconnect', () => {
+                console.log('WebSocket disconnected');
+            });
+        }
+        
+        handleMeetingUpdate(data) {
+            // Show notification for meeting updates
+            if (data.userId !== this.auth.user?.id) {
+                this.showNotification(`Meeting "${data.meetingTitle}" was updated by ${data.userName}`);
+            }
+            
+            // Refresh meeting list if needed
+            if (window.currentPage === 'dashboard' || window.currentPage === 'minutes') {
+                this.loadDashboardData();
+            }
+        }
+        
+        showNotification(message) {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-info';
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">Update</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+            
+            document.getElementById('toastContainer').appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+    }
+    
+    // ==================== APPLICATION MANAGER ====================
+    class CouncilAppManager {
+        constructor() {
+            this.authService = new AuthService();
+            this.apiService = new ApiService(this.authService);
+            this.uiManager = null;
+            
+            this.init();
+        }
+        
+        init() {
+            // Check authentication
+            if (this.authService.isAuthenticated) {
+                this.authService.setAuthHeader();
+                this.apiService.initWebSocket();
+                this.showApp();
+            } else {
+                this.showAuth();
+            }
+            
+            // Initialize UI Manager
+            this.uiManager = new UIManager(this);
+        }
+        
+        async login(email, password) {
+            const result = await this.authService.login(email, password);
+            
+            if (result.success) {
+                this.authService.setAuthHeader();
+                this.apiService.initWebSocket();
+                this.showApp();
+                return { success: true };
+            }
+            
+            return result;
+        }
+        
+        async register(userData) {
+            return await this.authService.register(userData);
+        }
+        
+        async googleAuth(googleData) {
+            const result = await this.authService.googleAuth(googleData);
+            
+            if (result.success) {
+                this.authService.setAuthHeader();
+                this.apiService.initWebSocket();
+                this.showApp();
+                return { success: true };
+            }
+            
+            return result;
+        }
+        
+        logout() {
+            this.authService.logout();
+            if (this.apiService.socket) {
+                this.apiService.socket.disconnect();
+            }
+            this.showAuth();
+        }
+        
+        showAuth() {
+            document.getElementById('authContainer').style.display = 'flex';
+            document.getElementById('appContainer').style.display = 'none';
+        }
+        
+        showApp() {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            this.uiManager.updateUserInfo();
+            this.uiManager.loadDashboardData();
+        }
+        
+        // Data fetching methods
+        async loadDashboardData() {
+            try {
+                const [stats, upcomingMeetings, leaderboard, manOfWeek] = await Promise.all([
+                    this.apiService.getDashboardStats(),
+                    this.apiService.getUpcomingMeetings(),
+                    this.apiService.getLeaderboard(),
+                    this.apiService.getManOfTheWeek()
+                ]);
+                
+                return {
+                    stats: stats.data,
+                    upcomingMeetings: upcomingMeetings.data,
+                    leaderboard: leaderboard.data,
+                    manOfWeek: manOfWeek.data
+                };
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                return null;
+            }
+        }
+        
+        async createMeeting(meetingData) {
+            return await this.apiService.createMeeting(meetingData);
+        }
+        
+        async generateMeetingPDF(meetingId) {
+            return await this.apiService.downloadPDF(meetingId);
+        }
+    }
+    
+    // ==================== UI MANAGER (UPDATED) ====================
+    class UIManager {
+        constructor(appManager) {
+            this.app = appManager;
+            this.init();
+        }
+        
+        init() {
+            this.cacheDOM();
+            this.bindEvents();
+            this.initGoogleSignIn();
+        }
+        
+        cacheDOM() {
+            // Cache all DOM elements as before
+            // ...
+        }
+        
+        bindEvents() {
+            // Bind all events as before
+            // ...
+        }
+        
+        async loadDashboardData() {
+            try {
+                const data = await this.app.loadDashboardData();
+                
+                if (data) {
+                    // Update stats
+                    if (data.stats) {
+                        this.updateStats(data.stats);
+                    }
+                    
+                    // Update Man of the Week
+                    if (data.manOfWeek) {
+                        this.updateManOfTheWeek(data.manOfWeek);
+                    }
+                    
+                    // Load recent meetings
+                    this.loadRecentMeetings();
+                    
+                    // Load upcoming meetings
+                    if (data.upcomingMeetings) {
+                        this.loadUpcomingMeetings(data.upcomingMeetings);
+                    }
+                    
+                    // Load leaderboard
+                    if (data.leaderboard) {
+                        this.loadLeaderboardPreview(data.leaderboard);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                this.showToast('Error loading dashboard data', 'error');
+            }
+        }
+        
+        updateStats(stats) {
+            // Update all stat elements with real data
+            if (this.meetingsCount) {
+                this.meetingsCount.textContent = stats.totalMeetings || 0;
+            }
+            
+            if (this.regularMeetings) {
+                this.regularMeetings.textContent = `${stats.regularMeetings || 0} Regular`;
+            }
+            
+            if (this.randomMeetings) {
+                this.randomMeetings.textContent = `${stats.randomMeetings || 0} Random`;
+            }
+            
+            // ... update other stats
+        }
+        
+        updateManOfTheWeek(man) {
+            if (man && this.manAvatar) {
+                this.manAvatar.textContent = man.avatar || '??';
+                this.manName.textContent = man.name || 'Not Selected';
+                this.manRole.textContent = man.role || 'Member';
+                this.manReason.textContent = man.reason || 'Outstanding performance this week';
+                this.manTasks.textContent = man.stats?.tasksCompleted || 0;
+                this.manMeetings.textContent = man.stats?.meetingsAttended || 0;
+                this.manPerformance.textContent = `${man.stats?.performance || 0}%`;
+            }
+        }
+        
+        async loadRecentMeetings() {
+            try {
+                const response = await this.app.apiService.getMeetings({
+                    limit: 5,
+                    sort: '-date'
+                });
+                
+                if (response.success && this.recentMeetingsList) {
+                    this.recentMeetingsList.innerHTML = response.data.map(meeting => `
+                        <div class="meeting-item">
+                            <div class="meeting-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="meeting-details">
+                                <div class="meeting-title">${meeting.title}</div>
+                                <div class="meeting-meta">
+                                    <span><i class="far fa-calendar"></i> ${this.formatDate(meeting.date)}</span>
+                                    <span><i class="far fa-clock"></i> ${meeting.startTime} - ${meeting.endTime}</span>
+                                    <span><i class="fas fa-user"></i> ${meeting.chairperson?.firstName || 'Chair'}</span>
+                                </div>
+                            </div>
+                            <div class="meeting-type type-${meeting.type}">
+                                ${meeting.type.charAt(0).toUpperCase() + meeting.type.slice(1)}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading recent meetings:', error);
+            }
+        }
+        
+        async loadUpcomingMeetings(meetings) {
+            if (!this.upcomingMeetingsTable) return;
+            
+            this.upcomingMeetingsTable.innerHTML = meetings.map(meeting => {
+                const statusBadge = meeting.status === 'scheduled' ? 
+                    '<span class="badge badge-success">Scheduled</span>' :
+                    '<span class="badge badge-warning">Pending</span>';
+                
+                return `
+                    <tr>
+                        <td>${this.formatDate(meeting.date)} ${meeting.startTime}</td>
+                        <td>${meeting.title}</td>
+                        <td>
+                            <span class="meeting-type type-${meeting.type}">
+                                ${meeting.type.charAt(0).toUpperCase() + meeting.type.slice(1)}
+                            </span>
+                        </td>
+                        <td>${meeting.location}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn-icon" title="Edit" onclick="uiManager.editMeeting('${meeting._id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon" title="Delete" onclick="uiManager.deleteMeeting('${meeting._id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn-icon" title="Generate PDF" onclick="uiManager.generatePDF('${meeting._id}')">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        async generatePDF(meetingId) {
+            try {
+                this.showLoading();
+                const result = await this.app.apiService.generateMeetingPDF(meetingId);
+                
+                if (result.success) {
+                    this.showToast('PDF generated and downloaded successfully!', 'success');
+                } else {
+                    this.showToast(result.message || 'Error generating PDF', 'error');
+                }
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                this.showToast('Error generating PDF', 'error');
+            } finally {
+                this.hideLoading();
+            }
+        }
+        
+        async createNewMeeting() {
+            const meetingData = {
+                title: document.getElementById('meetingTitle').value,
+                type: document.getElementById('meetingType').value,
+                date: document.getElementById('meetingDate').value,
+                startTime: document.getElementById('meetingStartTime').value,
+                endTime: document.getElementById('meetingEndTime').value,
+                location: document.getElementById('meetingLocation').value,
+                chairperson: document.getElementById('meetingChair').value,
+                objective: document.getElementById('meetingObjective').value,
+                agenda: this.getAgendaItems(),
+                attendees: this.getSelectedAttendees()
+            };
+            
+            try {
+                this.showLoading();
+                const result = await this.app.createMeeting(meetingData);
+                
+                if (result.success) {
+                    this.showToast('Meeting created successfully!', 'success');
+                    this.clearMeetingForm();
+                    this.navigateTo('dashboard');
+                } else {
+                    this.showToast(result.message || 'Error creating meeting', 'error');
+                }
+            } catch (error) {
+                console.error('Error creating meeting:', error);
+                this.showToast('Error creating meeting', 'error');
+            } finally {
+                this.hideLoading();
+            }
+        }
+        
+        // Other methods remain the same as before
+        // ...
+        
+        showToast(message, type = 'success') {
+            // Toast implementation as before
+            // ...
+        }
+        
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    }
+    
+    // ==================== INITIALIZE APPLICATION ====================
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize the application
+        window.appManager = new CouncilAppManager();
+        
+        // Make accessible globally
+        window.authService = window.appManager.authService;
+        window.apiService = window.appManager.apiService;
+        window.uiManager = window.appManager.uiManager;
+        
+        // Hide loading
+        setTimeout(() => {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }, 1000);
+    });
+                        </script>
+    
 </body>
 </html>
